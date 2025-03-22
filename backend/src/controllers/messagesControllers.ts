@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../db/prisma.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
 
+
 export const getUserConversations = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
@@ -103,7 +104,6 @@ export const startConversation = async (req: Request, res: Response) => {
       return;
     }
 
-    // Fetch all conversations that include both users
     const existingConversations = await prisma.conversation.findMany({
       where: {
         AND: [
@@ -114,15 +114,12 @@ export const startConversation = async (req: Request, res: Response) => {
       include: { users: true },
     });
 
-    // Ensure it's a private conversation (only 2 users)
     const existingConversation = existingConversations.find(conv => conv.users.length === 2);
 
     if (existingConversation) {
       res.json(existingConversation);
       return;
     }
-
-    // Create a new conversation
     const newConversation = await prisma.conversation.create({
       data: {
         name: "",
@@ -189,14 +186,12 @@ export const sendMessage = async (req: Request, res: Response) => {
       },
     });
 
-    // Get receiver ID
     const receiver = conversation.users.find((user) => user.id !== senderId);
     const receiverSocketId = receiver ? getReceiverSocketId(receiver.id) : null;
     const senderSocketId = getReceiverSocketId(senderId);
 
     console.log("Receiver ID:", receiver?.id, "Socket ID:", receiverSocketId);
 
-    // Emit the message to both the sender and the receiver
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }

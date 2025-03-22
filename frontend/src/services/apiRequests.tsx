@@ -42,7 +42,6 @@ export const getRequest = async (
         },
         withCredentials: true,
       });
-    //console.log("Conversations: ", res.data);
 
     return res.data;
 
