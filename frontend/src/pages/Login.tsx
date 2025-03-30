@@ -1,8 +1,6 @@
 import { useState, FormEvent } from "react";
 import { loginUser } from "../services/authServices";
 import { Link } from "react-router-dom";
-import "../../public/logo.jpg";
-import "../../public/new.gif";
 
 const LoginForm = () => {
   const [username, setUsername] = useState<string>("");
@@ -32,56 +30,46 @@ const LoginForm = () => {
 
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-screen px-4 bg-cover bg-center"
+      className="flex flex-col items-center justify-center h-[94vh] w-full px-4 sm:px-6 lg:px-8 bg-cover bg-center overflow-hidden mt-7"
       style={{ backgroundImage: "url('new.gif')" }}
     >
-      <div className="p-8 bg-white rounded-lg shadow-lg w-full max-w-md text-center">
+      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md text-center w-80 sm:w-[350px] mt-10">
         <div className="flex justify-center mb-4">
-          <img
-            src="logo.jpg"
-            alt="Logo"
-            className="w-12 h-12 object-contain rounded"
-          />
+          <img src="logo.jpg" alt="Logo" className="w-12 h-12 rounded-md" />
         </div>
-        <h2 className="text-blue-800 font-semibold text-xl mb-2">
-          Welcome Back!
-        </h2>
-        <p className="text-gray-600 text-sm mb-4">Log in to continue</p>
-        <form className="space-y-4" onSubmit={handleSubmit}>
+
+        <h2 className="text-[18px] font-semibold mb-2">Welcome Back!</h2>
+        <p className="text-gray-600 text-xs">Log in to continue</p>
+
+        {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
+
+        <form className="mt-4" onSubmit={handleSubmit}>
           <input
             type="text"
             placeholder="Username or Email"
             required
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-3xl focus:outline-none transition-all
-            hover:border-transparent focus:border-transparent focus:ring-[3px] focus:ring-blue-500 
-            focus:border-[1px] hover:border-[1px] hover:ring-[1px] hover:ring-blue-500"
+            className="w-4/5 p-2 text-[14px] border border-gray-300 rounded-xl focus:border-blue-500 hover:border-blue-400 focus:outline-none mt-3 pl-3"
           />
           <input
             type="password"
             placeholder="Password"
             required
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-3xl focus:outline-none transition-all
-            hover:border-transparent focus:border-transparent focus:ring-[3px] focus:ring-blue-500 
-            focus:border-[1px] hover:border-[1px] hover:ring-[1px] hover:ring-blue-500"
+            className="w-4/5 p-2 text-[14px] border border-gray-300 rounded-xl focus:border-blue-500 hover:border-blue-400 focus:outline-none mt-3 pl-3"
           />
 
           <button
             type="submit"
-           className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 rounded-3xl font-medium 
-  transition-all duration-500 hover:from-blue-600 hover:to-blue-800"
+            className="mt-4 text-[15px] w-4/5 bg-gradient-to-r from-blue-600 to-blue-800 text-white py-2 rounded-xl font-medium hover:from-blue-700 hover:to-blue-950"
           >
-            {loading ? <div>Logging In...</div> : <div>Log In</div>}
+            {loading ? "Logging In..." : "Log In"}
           </button>
         </form>
-        <div className="my-4 text-gray-500 font-medium">OR</div>
-        <p className="text-sm text-gray-600">
+
+        <p className="text-[10.5px] text-gray-700 mt-3">
           Don't have an account?{" "}
-          <Link
-            to="/signup"
-            className="text-blue-600 font-medium hover:text-blue-800 transition-all"
-          >
+          <Link to="/signup" className="text-blue-600 font-medium hover:underline">
             Sign Up
           </Link>
         </p>

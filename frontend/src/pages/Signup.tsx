@@ -55,27 +55,27 @@ const Signup = () => {
 
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-screen w-full px-4 sm:px-6 mt-2 lg:px-8 bg-cover bg-center"
+      className="flex flex-col items-center justify-center h-[94vh] w-full px-4 sm:px-6 lg:px-8 bg-cover bg-center overflow-hidden mt-7"
       style={{ backgroundImage: "url('new.gif')" }}
     >
-      <div className="mt-20 bg-white p-6 sm:p-10 rounded-xl shadow-lg text-center max-w-md w-full">
-        <div className="flex justify-center mb-4">
-          <img src="logo.jpg" alt="Logo" className="w-12 h-12 rounded-md" />
+      <div className="bg-white p-3 sm:p-4 rounded-lg shadow-md text-center w-80 sm:w-96 mt-10">
+        <div className="flex justify-center mb-2">
+          <img src="logo.jpg" alt="Logo" className="w-9 h-9 rounded-md" />
         </div>
 
-        <h2 className="text-2xl font-semibold mb-2">Create an Account</h2>
-        <p className="text-gray-600 text-sm">Sign up to get started</p>
+        <h2 className="text-base font-semibold mb-1 text-[18px]">Create an Account</h2>
+        <p className="text-gray-600 text-xs">Sign up to get started</p>
 
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+        {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
 
-        <form className="mt-4" onSubmit={handleSubmit}>
+        <form className="mt-2" onSubmit={handleSubmit}>
           <input
             type="text"
             placeholder="Username"
             required
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-3 border-2 border-gray-300 rounded-3xl focus:border-blue-500 hover:border-blue-400 focus:outline-none"
+            className="w-3/4 p-1 text-[13.5px] border border-gray-300 rounded-xl focus:border-blue-500 hover:border-blue-400 focus:outline-none mt-2 pl-3"
           />
 
           <input
@@ -84,7 +84,7 @@ const Signup = () => {
             required
             value={fullname}
             onChange={(e) => setFullname(e.target.value)}
-            className="w-full p-3 border-2 border-gray-300 rounded-3xl focus:border-blue-500 hover:border-blue-400 focus:outline-none mt-3"
+            className="w-3/4 p-1 text-[13.5px] border border-gray-300 rounded-xl focus:border-blue-500 hover:border-blue-400 focus:outline-none mt-2 pl-3"
           />
 
           <input
@@ -93,7 +93,7 @@ const Signup = () => {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 border-2 border-gray-300 rounded-3xl focus:border-blue-500 hover:border-blue-400 focus:outline-none mt-3"
+            className="w-3/4 p-1 text-[13.5px] border border-gray-300 rounded-xl focus:border-blue-500 hover:border-blue-400 focus:outline-none mt-2 pl-3"
           />
 
           <input
@@ -102,7 +102,7 @@ const Signup = () => {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 border-2 border-gray-300 rounded-3xl focus:border-blue-500 hover:border-blue-400 focus:outline-none mt-3"
+            className="w-3/4 p-1 text-[13.5px] border border-gray-300 rounded-xl focus:border-blue-500 hover:border-blue-400 focus:outline-none mt-2 pl-3"
           />
 
           <input
@@ -111,51 +111,44 @@ const Signup = () => {
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full p-3 border-2 border-gray-300 rounded-3xl focus:border-blue-500 hover:border-blue-400 focus:outline-none mt-3"
+            className="w-3/4 p-1 text-[13.3px] border border-gray-300 rounded-xl focus:border-blue-500 hover:border-blue-400 focus:outline-none mt-2 pl-3"
           />
 
-          <label className="block text-gray-700 text-sm font-medium mt-4">Gender</label>
-          <div className="flex justify-around mt-2 text-sm font-medium text-gray-700">
-            <label className="flex items-center gap-1">
+          <label className="block text-gray-700 text-sm font-normal mt-1">Gender</label>
+          <div className="flex justify-center gap-6 mt-1">
+            <label className="text-[13.5px] text-gray-700 items-center">
               <input
                 type="radio"
-                name="gender"
                 value="male"
                 checked={gender === "male"}
-                onChange={() => setGender("male")}
-                className="accent-blue-500"
+                onChange={(e) => setGender(e.target.value)}
+                className="w-2 h-2 mr-1"
               />
               Male
             </label>
-            <label className="flex items-center gap-1">
+            <label className="text-sm text-gray-700 items-center">
               <input
                 type="radio"
-                name="gender"
                 value="female"
                 checked={gender === "female"}
-                onChange={() => setGender("female")}
-                className="accent-blue-500"
+                onChange={(e) => setGender(e.target.value)}
+                className="w-2 h-2 mr-1"
               />
               Female
             </label>
+            
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="mt-4 w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 rounded-3xl font-medium hover:from-blue-700 hover:to-blue-900"
+            className="mt-2 text-[14px] w-3/4 bg-gradient-to-r from-blue-600 to-blue-800 text-white py-1 rounded-xl font-medium hover:from-blue-700 hover:to-blue-950"
           >
             {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
 
-        <div className="my-4 text-gray-500 text-sm flex items-center">
-          <div className="flex-grow h-px bg-gray-300"></div>
-          <span className="mx-2">OR</span>
-          <div className="flex-grow h-px bg-gray-300"></div>
-        </div>
-
-        <p className="text-sm text-gray-700">
+        <p className="text-[10.5px] text-gray-700 mt-2">
           Already have an account?{" "}
           <Link to="/login" className="text-blue-600 font-medium hover:underline">
             Log In

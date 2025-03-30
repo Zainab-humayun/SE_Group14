@@ -9,13 +9,13 @@ import HomeLeftBar from "../components/HomeLeftBar";
 
 const Dashboard = () => {
   const { darkMode } = useTheme(); 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);w
 
   return (
     <div
-      className={`mt-2 p-6 shadow-xl rounded-2xl border ${
+      className={`min-h-screen p-6 shadow-xl rounded-2xl border ${
         darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
-      }`}
+      } overflow-hidden`}
     >
       {/* Menu Button for Small Screens */}
       <div className="sm:hidden relative">
