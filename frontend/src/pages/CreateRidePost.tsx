@@ -1,157 +1,136 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/authContext";
 import { postRequest } from "../services/apiRequests";
-
+import { FaExchangeAlt } from "react-icons/fa";
 
 interface Location {
   place_id: string;
   display_name: string;
 }
 
-
 const CreateRidePost = () => {
   const [toQuery, setToQuery] = useState("");
   const [fromQuery, setFromQuery] = useState("");
-  const [fare, setFare] = useState("");
-  const [note, setNote] = useState("");
-  const [toSuggestions, setToSuggestions] = useState([]);
-  const [fromSuggestions, setFromSuggestions] = useState([]);
-
+  const [date, setDate] = useState("Today");
+  const [passengers, setPassengers] = useState(1);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string| null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const auth = useContext(AuthContext);
+  if (!auth) return null;
 
-  if (!auth) {
-    return null;
-  }
-
-  const fetchLocations = async (query:string, setSuggestions:any) => {
-    if (query.length < 3) {
-      setSuggestions([]);
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=5`
-      );
-      const data = await response.json();
-      setSuggestions(data);
-    } catch (error) {
-      console.error("Error fetching locations:", error);
-    }
-  };
-
-  useEffect(() => {
-    const debounce = setTimeout(() => fetchLocations(toQuery, setToSuggestions), 300);
-    return () => clearTimeout(debounce);
-  }, [toQuery]);
-
-  useEffect(() => {
-    const debounce = setTimeout(() => fetchLocations(fromQuery, setFromSuggestions), 300);
-    return () => clearTimeout(debounce);
-  }, [fromQuery]);
-
-  const handlePostClick = async (e:any) => {
+  const handlePostClick = async (e: any) => {
     e.preventDefault();
     const postData = {
       pickLocation: fromQuery,
       dropLocation: toQuery,
-      cost:fare,
-      caption:note,
+      date,
+      passengers,
       poster: auth.user?.id,
     };
-    const res = await postRequest(postData, "/rides/send-request", auth.accessToken, setLoading, setError);
-
-    if (res) {
-      window.location.assign("/");
-    }
-
-   
+    await postRequest(postData, "/rides/send-request", auth.accessToken, setLoading, setError);
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-gray-900 text-white shadow-xl rounded-2xl border border-gray-700">
-      {/* <Map></Map> */}
-      <h3 className="text-2xl font-bold text-center">Create Ride Post</h3>
-      <form className="space-y-5 mt-6" onSubmit={handlePostClick}>
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Enter destination..."
-            value={toQuery}
-            onChange={(e) => setToQuery(e.target.value)}
-            className="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
-          {toSuggestions.length > 0 && (
-            <ul className="absolute w-full bg-gray-800 border border-gray-600 shadow-md mt-1 rounded-md z-20 text-white">
-              {toSuggestions.map((place:Location) => (
-                <li
-                  key={place.place_id}
-                  className="p-3 cursor-pointer hover:bg-gray-700"
-                  onClick={() => {
-                    setToQuery(place.display_name);
-                    setToSuggestions([]);
-                  }}
-                >
-                  {place.display_name}
-                </li>
-              ))}
-            </ul>
-          )}
+    <div className="flex flex-col items-center min-h-screen p-6 bg-gray-100">
+      <div className="w-full max-w-sm bg-white rounded-xl shadow-lg overflow-hidden">
+        {/* Blue Header */}
+        <div className="bg-blue-400 p-6 text-white text-lg font-semibold">
+          Where are you going?
         </div>
 
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Enter pickup location..."
-            value={fromQuery}
-            onChange={(e) => setFromQuery(e.target.value)}
-            className="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
-          {fromSuggestions.length > 0 && (
-            <ul className="absolute w-full bg-gray-800 border border-gray-600 shadow-md mt-1 rounded-md z-20 text-white">
-              {fromSuggestions.map((place:Location) => (
-                <li
-                  key={place.place_id}
-                  className="p-3 cursor-pointer hover:bg-gray-700"
-                  onClick={() => {
-                    setFromQuery(place.display_name);
-                    setFromSuggestions([]);
-                  }}
-                >
-                  {place.display_name}
-                </li>
-              ))}
-            </ul>
-          )}
+        {/* Blue Background for From and To Inputs */}
+        <div className="bg-blue-400 p-6">
+          {/* From Input */}
+          <div className="flex items-center mb-4 ml-2">
+            {/* From Input */}
+            <div className="flex-1">
+              <label className="text-sm text-white block mb-1">From</label>
+              <div className="relative flex items-center pb-2">
+                <input
+                  type="text"
+                  value={fromQuery}
+                  onChange={(e) => setFromQuery(e.target.value)}
+                  className="flex-1 bg-transparent outline-none text-white"
+                />
+              </div>
+              <div className="w-1/2 border-b border-white/50"></div> {/* Shorter, Transparent, Aligned Left */}
+            </div>
+  
+            {/* Image on the right */}
+            <div className="ml-4 flex-shrink-0">
+              <img src="destination.gif" alt="From destination" className="w-28 h-28" /> {/* Bigger image */}
+            </div>
+          </div>
+
+          {/* To Input */}
+          <div className="flex items-center mb-4 ml-2">
+            {/* To Input */}
+            <div className="flex-1">
+              <label className="text-sm text-white block mb-1">To</label>
+              <div className="relative flex items-center pb-2">
+                <input
+                  type="text"
+                  value={toQuery}
+                  onChange={(e) => setToQuery(e.target.value)}
+                  className="flex-1 bg-transparent outline-none text-white"
+                />
+              </div>
+              <div className="w-1/2 border-b border-white/50"></div> {/* Shorter, Transparent, Aligned Left */}
+            </div>
+
+            {/* Image on the right */}
+            <div className="ml-4 flex-shrink-0">
+              {/* If you want to add another GIF for the "To" field, uncomment the below line */}
+              {/* <img src="path/to/your/image.gif" alt="To destination" className="w-12 h-12" /> */}
+            </div>
+          </div>
         </div>
 
-        <input
-          type="number"
-          placeholder="Fare in Rs..."
-          min={0}
-          value={fare}
-          onChange={(e) => setFare(e.target.value)}
-          className="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-        />
+        {/* White Background for Other Sections */}
+        <div className="p-6 bg-white">
+          <div className="mb-4">
+            <label className="block text-gray-700 font-semibold mb-2">Date</label>
+            <div className="flex space-x-3">
+              {["Today", "Tomorrow", "Other Date"].map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDate(d)}
+                  className={`px-3 py-2 rounded-lg ${
+                    date === d ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
 
-        <input
-          type="text"
-          placeholder="Add a note..."
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          className="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-        />
+          <div className="mb-6">
+            <label className="block text-gray-700 font-semibold mb-2">Passengers</label>
+            <div className="flex space-x-3">
+              {[1, 2, 3, 4].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setPassengers(num)}
+                  className={`w-10 h-10 flex items-center justify-center rounded-full ${
+                    passengers === num ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
+          </div>
 
-        <button
-          type="submit"
-          className="w-full bg-green-500 text-white py-4 rounded-lg font-semibold hover:bg-green-600 transition duration-300 text-lg"
-        >
-          Post Ride
-        </button>
-      </form>
+          <button
+            onClick={handlePostClick}
+            className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition duration-300"
+          >
+            {loading ? "Posting..." : "Create"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

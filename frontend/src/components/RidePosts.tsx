@@ -3,7 +3,15 @@ import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/authContext";
 import { Link } from "react-router-dom";
 import { useTheme } from "../context/themeContext";
+// import { FaLocationDot } from "react-icons/fa6";
+// import { IoLocationOutline } from "react-icons/io5";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
+// import { faLocationDot as faLocationDotLight } from "@fortawesome/pro-light-svg-icons"; // Importing the light version
 
+import { IoLocationOutline } from "react-icons/io5"; // Import from react-icons
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClock, faCar, faMoneyBillWave, faUsers,  faStar, faStarHalfAlt} from '@fortawesome/free-solid-svg-icons';
 
 const RidePosts = () => {
   const auth = useContext(AuthContext);
@@ -47,70 +55,118 @@ const RidePosts = () => {
   };
 
   return (
-    <div
-      className="max-w-3xl mx-auto p-4 rounded-lg shadow-lg border "
-    >
-      <h3 className="text-2xl font-semibold mb-4">
-        Ride Requests
-      </h3>
+    <div className="max-w-3xl mx-auto p-6 rounded-lg shadow-lg border bg-gradient-to-r from-blue-50 to-blue-100 text-gray-900 border-gray-300 font-montserrat">
+  <h3 className="text-2xl font-semibold mb-6 text-center">Ride Requests</h3>
 
-      {loading && <p className="text-blue-500">Loading...</p>}
-      {error && <p className="text-red-500">Error: {error}</p>}
-      {successMessage && <p className="text-green-500 text-center">{successMessage}</p>}
+  {loading && <p className="text-blue-500 text-center">Loading...</p>}
+  {error && <p className="text-red-500 text-center">Error: {error}</p>}
+  {successMessage && <p className="text-green-500 text-center">{successMessage}</p>}
 
-      {posts && posts.length > 0 ? (
-        <div className="space-y-4">
-          {posts.map((post) => (
-            <div
-              key={post.id}
-              className={`shadow-md rounded-lg p-4 border ${
-                darkMode
-                  ? "bg-gray-800 text-white border-gray-700"
-                  : "bg-gray-100 text-gray-900 border-gray-400"
-              }`}
-            >
-              <Link to="#" className="flex items-center gap-3">
-                <img
-                  src={post.poster.profilePic}
-                  alt={post.poster.username}
-                  className="w-10 h-10 rounded-full border border-gray-600"
-                />
-                <div>
-                  <span className="font-semibold">{post.poster.username}</span>
-                  <small className="block text-gray-400">{new Date(post.time).toLocaleString()}</small>
-                </div>
-              </Link>
-
-              <div className="mt-4">
-                <h4>
-                  <span className="font-semibold">Pickup:</span> {post.pickLocation}
-                </h4>
-                <h4>
-                  <span className="font-semibold">Drop:</span> {post.dropLocation}
-                </h4>
-                <h3 className="text-lg font-bold text-green-500 mt-2">
-                  Fare: Rs. {post.cost}
-                </h3>
+  {posts && posts.length > 0 ? (
+    <div className="space-y-6">
+      {posts.map((post) => (
+        <div
+          key={post.id}
+          className="shadow-md rounded-lg p-5 border flex flex-col gap-5 bg-white"
+        >
+           {/* User Info */}
+           <div className="flex items-center gap-4">
+            <img
+              src={post.poster.profilePic}
+              alt={post.poster.username}
+              className="w-14 h-14 rounded-full border border-gray-400"
+            />
+            <div className="flex-1">
+              <span className="font-semibold text-lg">{post.poster.username}</span>
+              {/* Rating Section */}
+              <div className="flex items-center gap-1 text-yellow-400 text-sm mt-1">
+                <FontAwesomeIcon icon={faStar} className="text-yellow-400 text-base" />
+                <span className="text-black font-semibold">
+                  {(post.rating ?? 4.83).toFixed(2)}
+                </span>
+                <span className="text-gray-500 text-xs">
+                  ({post.totalRatings ?? 3} reviews)
+                </span>
               </div>
 
-              <button
-                onClick={() => handleAccept(post.id)}
-                className={`w-full py-2 mt-4 rounded-lg font-semibold text-white transition-all ${
-                  post.isAccepted
-                    ? "bg-gray-600 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
-                }`}
-                disabled={post.isAccepted}
-              >
-                {post.isAccepted ? "Not Available" : "Accept Ride"}
-              </button>
             </div>
-          ))}
+          </div>
+
+          {/* Pickup & Drop Section */}
+          <div className="flex gap-4 items-start">
+          {/* Location Icons */}
+          <div className="flex flex-col items-center">
+          <FontAwesomeIcon icon={faLocationDot} style={{ color: '#3459c4' }} className="text-lg" />
+
+            {/* Vertical spacing between the first location icon and dots */}
+            <div className="my-3">
+              <div className="h-1 w-1 bg-blue-700 rounded-full mb-2"></div>
+              <div className="h-1 w-1 bg-blue-700 rounded-full mb-2"></div>
+              <div className="h-1 w-1 bg-blue-700 rounded-full"></div>
+            </div>
+            <FontAwesomeIcon icon={faLocationDot} className="text-blue-700 text-lg opacity-60" />
+          </div>
+
+         {/* Locations */}
+          <div className="space-y-2">
+            <p className="text-sm">
+              <strong className="text-[#3459c4]">Pickup:</strong> {post.pickLocation}
+            </p>
+            <p className="text-sm">
+              <strong className="text-[#3459c4]">Drop:</strong> {post.dropLocation}
+            </p>
+          </div>
+
         </div>
-      ) : (
-        <p className="text-center text-gray-500">No ride requests available.</p>
-      )}
+          {/* Ride Details Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            {/* Time Section */}
+            <div className="flex flex-col items-center">
+              <FontAwesomeIcon icon={faClock} className="mr-1 text-[#3459c4]" />
+              <strong className="text-[#3459c4] text-sm">Time</strong>
+              <p>{new Date(post.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+            </div>
+
+            {/* Car Section */}
+            <div className="flex flex-col items-center">
+              <FontAwesomeIcon icon={faCar} className="mr-1 text-[#3459c4]" />
+              <strong className="text-[#3459c4] text-sm">Car</strong>
+              <p>{post.carModel || "Honda City"}</p>
+            </div>
+
+            {/* Seats Section */}
+            <div className="flex flex-col items-center">
+              <FontAwesomeIcon icon={faUsers} className="mr-1 text-[#3459c4]" />
+              <strong className="text-[#3459c4] text-sm">Seats</strong>
+              <p>{post.availableSeats ?? 1}</p>
+              {/* <p>{(post.availableSeats ?? 1)}/{post.totalSeats}</p> */}
+            </div>
+
+            {/* Fare Section (Renamed from Pay) */}
+            <div className="flex flex-col items-center">
+              <FontAwesomeIcon icon={faMoneyBillWave} className="mr-1 text-[#3459c4]" />
+              <strong className="text-[#3459c4] text-sm">Fare</strong>
+              <p>Rs. {post.cost}</p>
+            </div>
+          </div>
+
+          {/* Request Button */}
+          <button
+            onClick={() => handleAccept(post.id)}
+            className={`w-full py-2 rounded-lg font-semibold text-white text-center transition-all ${
+              post.isAccepted ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+            }`}
+            disabled={post.isAccepted}
+          >
+            {post.isAccepted ? "Not Available" : "Request a Ride"}
+          </button>
+        </div>
+      ))}
     </div>
+  ) : (
+    <p className="text-center text-gray-500">No ride requests available.</p>
+  )}
+</div>
   );
 };
 

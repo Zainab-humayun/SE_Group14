@@ -6,16 +6,23 @@ import RidePosts from "../components/RidePosts";
 import { useTheme } from "../context/themeContext";
 import HomeRightBar from "../components/HomeRightBar";
 import HomeLeftBar from "../components/HomeLeftBar";
+import LocationMap from "./LocationMap"; // Adjust the import path as necessary
+
 
 const Dashboard = () => {
   const { darkMode } = useTheme(); 
-  const [menuOpen, setMenuOpen] = useState(false);w
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div
-      className={`min-h-screen p-6 shadow-xl rounded-2xl border ${
-        darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
-      } overflow-hidden`}
+    className={`min-h-screen p-6 shadow-xl rounded-2xl border ${
+      darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+    } overflow-hidden`}
+    style={{
+      backgroundImage: "url(/bg2.jpg)", // Ensure the image is in public folder
+      backgroundSize: "cover",         // Ensure it covers the full page
+      backgroundPosition: "center",    // Ensure it's centered
+    }}
     >
       {/* Menu Button for Small Screens */}
       <div className="sm:hidden relative">
@@ -58,12 +65,13 @@ const Dashboard = () => {
         {/* Main Content */}
         <div className="col-span-2">
           <div className="flex flex-col sm:flex-row justify-center items-center mb-6 gap-4">
-            <Link
-              to="/make-ride-request"
-              className="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition duration-300 focus:ring focus:ring-green-300"
-            >
-              Make Ride Post
-            </Link>
+          <Link
+            to="/make-ride-request"
+            className="bg-gradient-to-r from-[#3459c4] to-[#567be5] text-white text-sm font-bold px-4 py-2 rounded-lg transition duration-300 hover:brightness-110 focus:ring focus:ring-blue-300"
+          >
+            Create Ride Post
+          </Link>
+
           </div>
           <RidePosts />
         </div>
