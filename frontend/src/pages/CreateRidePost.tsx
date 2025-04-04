@@ -15,6 +15,9 @@ const CreateRidePost = () => {
   const [passengers, setPassengers] = useState(1);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [customDate, setCustomDate] = useState<string>("");
+  const [time, setTime] = useState<string>("");
+
 
   const auth = useContext(AuthContext);
   if (!auth) return null;
@@ -24,7 +27,8 @@ const CreateRidePost = () => {
     const postData = {
       pickLocation: fromQuery,
       dropLocation: toQuery,
-      date,
+      date: date === "Other Date" ? customDate : date,
+      time,
       passengers,
       poster: auth.user?.id,
     };
@@ -90,6 +94,7 @@ const CreateRidePost = () => {
         {/* White Background for Other Sections */}
         <div className="p-6 bg-white">
           <div className="mb-4">
+          {/* DATE BUTTON*/}
             <label className="block text-gray-700 font-semibold mb-2">Date</label>
             <div className="flex space-x-3">
               {["Today", "Tomorrow", "Other Date"].map((d) => (
@@ -105,6 +110,30 @@ const CreateRidePost = () => {
               ))}
             </div>
           </div>
+          {/* Date picker for "Other Date" */}
+          {date === "Other Date" && (
+            <div className="mt-3">
+              <label className="block text-gray-700 text-sm mb-1">Select a date</label>
+              <input
+                type="date"
+                value={customDate}
+                onChange={(e) => setCustomDate(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+          )}
+          {/* Time picker */}
+            <div className="mt-4">
+              <label className="block text-gray-700 text-sm mb-1">Select a time</label>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+
+
 
           <div className="mb-6">
             <label className="block text-gray-700 font-semibold mb-2">Passengers</label>
@@ -128,6 +157,7 @@ const CreateRidePost = () => {
             className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition duration-300"
           >
             {loading ? "Posting..." : "Create"}
+            
           </button>
         </div>
       </div>
