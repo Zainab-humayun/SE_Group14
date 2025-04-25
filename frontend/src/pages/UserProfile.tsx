@@ -1,7 +1,9 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 import { useContext, useState, useEffect } from "react";
 import { getRequest } from "../services/apiRequests";
+import { Navigate } from "react-router-dom";
+import ComplainForm from "../components/sub/ComplainForm";
 import { Link } from "react-router-dom";
 import {
   FiEdit,
@@ -12,30 +14,72 @@ import {
   FiShield,
   FiAlertCircle,
   FiMessageSquare,
+  FiPlus,
+  FiTruck,
 } from "react-icons/fi";
 import { useTheme } from "../context/themeContext";
 import { FaCar } from "react-icons/fa";
-import UploadImage from "./Test";
+
+interface Complaint {
+  id: string;
+  complain: string;
+  createdAt: string;
+  targetId: string;
+}
+
+interface Vehicle {
+  name: string;
+  model: string;
+  numberPlate: string;
+  color: string;
+  vehiclePics?: string;
+}
+
+interface Profile {
+  id: string;
+  fullname: string;
+  username: string;
+  profilePic?: string;
+  isAdmin: boolean;
+  driver: boolean;
+  isSuspended: boolean;
+  rating?: number;
+  reviews?: any[];
+  complains?: Complaint[];
+  phone?: string;
+  gender?: string;
+  vehicles?: Vehicle;
+}
 
 const UserProfile = () => {
   const { darkMode } = useTheme();
   const { userId } = useParams();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [showComplains, setShowComplaints] = useState<boolean>(false);
+  const [showComplainForm, setShowComplainForm] = useState<boolean>(false);
+  
 
-  const authContext = useContext(AuthContext);
-  if (!authContext) {
+  console.log("Profile: ", profile);
+
+  const auth = useContext(AuthContext);
+  if (!auth) {
     throw new Error(
       "AuthContext is undefined. Make sure you are using ProtectedRoute within an AuthProvider."
     );
+    return;
   }
-  const { accessToken } = authContext;
+  const { accessToken } = auth;
+
+  console.log("Auth User ID:", auth.user?.id);
+  console.log("Profile ID:", profile?.id);
 
   useEffect(() => {
     const fetchUserData = async () => {
       if (!userId) return;
       setLoading(true);
+      setError(null);
       try {
         const userData = await getRequest(
           `/general/profile/${userId}`,
@@ -45,7 +89,7 @@ const UserProfile = () => {
         );
         setProfile(userData);
       } catch (error) {
-        setError("Failed to fetch user profile.");
+        setError("Failed to fetch user profile. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -54,41 +98,25 @@ const UserProfile = () => {
     fetchUserData();
   }, [userId, accessToken]);
 
-  // Color variables for dark/light mode
+  // Uber-inspired color scheme
   const bgColor = darkMode
-    ? "bg-gray-900 text-gray-50"
-    : "bg-white text-gray-900";
-
-  
-  
-  
-  const cardBg = darkMode
-    ? "bg-gray-800 border-gray-700"
-    : "bg-white border-gray-200";
-
+    ? "bg-gray-900 text-gray-100"
+    : "bg-gray-50 text-gray-900";
+  const cardBg = darkMode ? "bg-gray-800" : "bg-white";
   const textColor = darkMode ? "text-gray-100" : "text-gray-900";
-
   const secondaryText = darkMode ? "text-gray-400" : "text-gray-600";
-
   const borderColor = darkMode ? "border-gray-700" : "border-gray-200";
-
-  // const buttonHover = darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100";
-
-  const coverBg = darkMode
-    ? "bg-gradient-to-r from-gray-800 to-gray-900"
-    : "bg-gradient-to-r from-blue-500 to-indigo-600";
-
-  // const accentColor = darkMode ? "text-blue-400" : "text-blue-600";
-
+  const coverBg = darkMode ? "bg-gray-800" : "bg-black";
   const buttonBg = darkMode
     ? "bg-gray-700 hover:bg-gray-600"
-    : "bg-blue-100 hover:bg-blue-200";
+    : "bg-black hover:bg-gray-800";
+  const accentColor = "text-green-500"; // Uber's green accent color
 
   if (loading)
     return (
       <div className={`flex justify-center items-center h-screen ${bgColor}`}>
         <div
-          className={`animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 ${darkMode ? "border-blue-400" : "border-blue-500"}`}
+          className={`animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500`}
         ></div>
       </div>
     );
@@ -110,21 +138,24 @@ const UserProfile = () => {
     >
       {profile ? (
         <div className="max-w-4xl mx-auto">
-          {/* Profile Header */}
+          {/* Profile Header - Uber-style card */}
           <div
-            className={`${cardBg} shadow-xl rounded-xl overflow-hidden border ${borderColor} transition-colors duration-300`}
+            className={`${cardBg} shadow-lg rounded-lg overflow-hidden border ${borderColor} transition-colors duration-300 mb-8`}
           >
-            {/* Cover Photo */}
-            <div className={`h-48 ${coverBg} relative`}>
+            {/* Cover Photo - Uber black background */}
+            <div className={`h-40 ${coverBg} relative`}>
               <div className="absolute -bottom-16 left-6">
                 <div
-                  className={`h-32 w-32 rounded-full border-4 ${darkMode ? "border-gray-800" : "border-white"} shadow-lg overflow-hidden`}
+                  className={`h-32 w-32 rounded-full border-4 ${cardBg} shadow-lg overflow-hidden`}
                 >
                   <img
-                    
                     src={profile.profilePic || "/default-profile.png"}
                     alt={`${profile.fullname || "User"}'s Profile`}
                     className="h-full w-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "/default-profile.png";
+                    }}
                   />
                 </div>
               </div>
@@ -137,128 +168,212 @@ const UserProfile = () => {
                 <div className="flex-1">
                   <div className="flex flex-col sm:flex-row sm:items-end justify-between">
                     <div>
-                      <h1 className={`text-3xl font-bold ${textColor}`}>
+                      <h1 className={`text-2xl font-bold ${textColor}`}>
                         {profile.fullname}
                       </h1>
-                      <p className={`${secondaryText} text-lg`}>
+                      <p className={`${secondaryText} text-sm`}>
                         @{profile.username}
                       </p>
                     </div>
                     <div className="flex space-x-2 mt-4 sm:mt-0">
                       <Link
                         to={`/${userId}/update`}
-                        className={`flex items-center px-4 py-2 rounded-lg ${buttonBg} ${textColor} transition-all`}
+                        className={`flex items-center px-4 py-2 rounded-lg ${buttonBg} text-white transition-all text-sm font-medium`}
                       >
-                        <FiEdit className="mr-2" /> Edit Profile
+                        <FiEdit className="mr-2" /> Edit
                       </Link>
-                      <button
-                        className={`flex items-center px-4 py-2 rounded-lg ${darkMode ? "bg-gray-700 hover:bg-gray-600 text-red-400" : "bg-red-100 hover:bg-red-200 text-red-700"} transition-all`}
-                      >
-                        <FiTrash2 className="mr-2" /> Remove
-                      </button>
                     </div>
                   </div>
 
-                  {/* Badges */}
+                  {/* Badges - Uber-style simple indicators */}
                   <div className="mt-4 flex flex-wrap gap-2">
                     {profile.isAdmin && (
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${darkMode ? "bg-purple-900 text-purple-200" : "bg-purple-100 text-purple-800"}`}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${darkMode ? "bg-gray-700 text-green-400" : "bg-gray-200 text-gray-800"}`}
                       >
-                        <FiShield className="mr-2" /> Admin
+                        <FiShield className="mr-1" /> Admin
                       </span>
                     )}
                     {profile.driver && (
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${darkMode ? "bg-green-900 text-green-200" : "bg-green-100 text-green-800"}`}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${darkMode ? "bg-gray-700 text-green-400" : "bg-gray-200 text-gray-800"}`}
                       >
-                        <FaCar className="mr-2" /> Driver
+                        <FaCar className="mr-1" /> Driver
                       </span>
                     )}
                     {profile.isSuspended && (
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${darkMode ? "bg-red-900 text-red-200" : "bg-red-100 text-red-800"}`}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${darkMode ? "bg-red-900 text-red-200" : "bg-red-100 text-red-800"}`}
                       >
-                        <FiAlertCircle className="mr-2" /> Suspended
+                        <FiAlertCircle className="mr-1" /> Suspended
                       </span>
                     )}
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${darkMode ? "bg-gray-700 text-gray-200" : "bg-gray-100 text-gray-800"}`}
-                    >
-                      <FiUser className="mr-2" /> {profile.type}
-                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Stats */}
+            {/* Stats - Uber-style simple stats */}
             <div
-              className={`border-t ${borderColor} ${darkMode ? "bg-gray-700" : "bg-gray-50"} px-6 py-4`}
+              className={`border-t ${borderColor} ${darkMode ? "bg-gray-700" : "bg-gray-100"} px-4 sm:px-6 py-3`}
             >
-              <div className="flex flex-wrap justify-between">
-                <div className={`flex items-center ${secondaryText}`}>
-                  <FiStar
-                    className={`${darkMode ? "text-yellow-300" : "text-yellow-500"} mr-2`}
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-0">
+                {/* Rating */}
+                <div className={`flex items-center ${secondaryText} text-sm`}>
+                  <FiStar className={`${accentColor} mr-1`} />
+                  <span className="font-medium">{profile.rating || "N/A"}</span>
+                  <span className="ml-1">({profile.reviews?.length || 0})</span>
+                </div>
+
+                {/* Complaints */}
+                <div
+                  className={`flex items-center ${secondaryText} text-sm flex-wrap`}
+                >
+                  <FiMessageSquare
+                    className={`${darkMode ? "text-blue-300" : "text-blue-500"} mr-1`}
                   />
-                  <span className="font-medium">{profile.rating || 0}/5</span>
-                  <span className="ml-1">
-                    ({profile.reviews?.length || 0} reviews)
+                  <span className="flex items-center gap-1 flex-wrap">
+                    {profile.complains?.length || 0} complaints
+                    <button
+                      onClick={() => setShowComplaints(true)}
+                      className={`underline font-medium ${darkMode ? "text-blue-300" : "text-blue-600"} hover:text-blue-800 transition`}
+                    >
+                      View
+                    </button>
+                    {auth.user?.id &&
+                      userId &&
+                      auth.user.id !== userId && (
+                        <button
+                          onClick={() => setShowComplainForm(!showComplainForm)}
+                          className="underline font-medium text-blue-500 hover:text-blue-700"
+                        >
+                          Add
+                        </button>
+                      )}
                   </span>
                 </div>
-                <div className={`flex items-center ${secondaryText}`}>
-                  <FiMessageSquare
-                    className={`${darkMode ? "text-blue-300" : "text-blue-500"} mr-2`}
-                  />
-                  <span>{profile.complains?.length || 0} complaints</span>
+
+                {/* Phone */}
+                <div className={`flex items-center ${secondaryText} text-sm`}>
+                  <FiPhone className={`${secondaryText} mr-1`} />
+                  <span>{profile.phone || "No phone"}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Details Section */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {showComplainForm && profile && (
+            <ComplainForm
+              targetId={profile?.id}
+              darkMode={darkMode}
+              onClose={() => setShowComplainForm(false)}
+            />
+          )}
+
+          {/* Complaints Modal */}
+          {showComplains && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              {/* Background Blur */}
+              <div
+                className="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm"
+                onClick={() => setShowComplaints(false)}
+              ></div>
+
+              {/* Modal */}
+              <div
+                className={`relative z-10 ${cardBg} rounded-xl shadow-xl w-11/12 max-w-md p-6 max-h-[80vh] overflow-y-auto`}
+              >
+                <h2 className={`text-lg font-bold mb-4 ${textColor}`}>
+                  Complaints
+                </h2>
+                <ul className="space-y-2">
+                  {profile.complains && profile.complains.length > 0 ? (
+                    profile.complains.map(
+                      (complaint: Complaint, idx: number) => (
+                        <li
+                          key={idx}
+                          className={`p-3 rounded ${darkMode ? "bg-gray-700" : "bg-gray-100"} ${darkMode ? "text-gray-200" : "text-gray-800"}`}
+                        >
+                          <p>{complaint.complain}</p>
+                          <p className={`text-xs mt-1 ${secondaryText}`}>
+                            {new Date(complaint.createdAt).toLocaleDateString()}
+                          </p>
+                        </li>
+                      )
+                    )
+                  ) : (
+                    <p className={`${secondaryText}`}>No complaints found.</p>
+                  )}
+                </ul>
+                <button
+                  onClick={() => setShowComplaints(false)}
+                  className={`mt-4 px-4 py-2 ${buttonBg} text-white rounded transition`}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Details Section - Uber-style two-column layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Personal Info Card */}
             <div
-              className={`${cardBg} shadow-xl rounded-xl p-6 border ${borderColor} transition-colors duration-300`}
+              className={`${cardBg} shadow-sm rounded-lg p-5 border ${borderColor} transition-colors duration-300`}
             >
               <h2
-                className={`text-xl font-semibold ${textColor} mb-5 pb-2 border-b ${borderColor}`}
+                className={`text-lg font-semibold ${textColor} mb-4 pb-2 border-b ${borderColor}`}
               >
                 Personal Information
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center">
-                  <FiUser className={`${secondaryText} mr-3 text-lg`} />
+                  <div
+                    className={`w-8 h-8 rounded-full ${darkMode ? "bg-gray-700" : "bg-gray-100"} flex items-center justify-center mr-3`}
+                  >
+                    <FiUser className={`${secondaryText}`} />
+                  </div>
                   <div>
-                    <p className={`text-sm ${secondaryText}`}>Username</p>
+                    <p className={`text-xs ${secondaryText}`}>Username</p>
                     <p className={`${textColor} font-medium`}>
                       @{profile.username}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <FiUser className={`${secondaryText} mr-3 text-lg`} />
+                  <div
+                    className={`w-8 h-8 rounded-full ${darkMode ? "bg-gray-700" : "bg-gray-100"} flex items-center justify-center mr-3`}
+                  >
+                    <FiUser className={`${secondaryText}`} />
+                  </div>
                   <div>
-                    <p className={`text-sm ${secondaryText}`}>Full Name</p>
+                    <p className={`text-xs ${secondaryText}`}>Full Name</p>
                     <p className={`${textColor} font-medium`}>
                       {profile.fullname}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <FiUser className={`${secondaryText} mr-3 text-lg`} />
+                  <div
+                    className={`w-8 h-8 rounded-full ${darkMode ? "bg-gray-700" : "bg-gray-100"} flex items-center justify-center mr-3`}
+                  >
+                    <FiUser className={`${secondaryText}`} />
+                  </div>
                   <div>
-                    <p className={`text-sm ${secondaryText}`}>Gender</p>
+                    <p className={`text-xs ${secondaryText}`}>Gender</p>
                     <p className={`${textColor} font-medium capitalize`}>
                       {profile.gender || "Not specified"}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <FiPhone className={`${secondaryText} mr-3 text-lg`} />
+                  <div
+                    className={`w-8 h-8 rounded-full ${darkMode ? "bg-gray-700" : "bg-gray-100"} flex items-center justify-center mr-3`}
+                  >
+                    <FiPhone className={`${secondaryText}`} />
+                  </div>
                   <div>
-                    <p className={`text-sm ${secondaryText}`}>Phone</p>
+                    <p className={`text-xs ${secondaryText}`}>Phone</p>
                     <p className={`${textColor} font-medium`}>
                       {profile.phone || "Not provided"}
                     </p>
@@ -267,89 +382,107 @@ const UserProfile = () => {
               </div>
             </div>
 
-            {/* Vehicle Info Card - Only shown if user is a driver */}
-
-            <div
-              className={`${cardBg} shadow-xl rounded-xl p-6 border ${borderColor} transition-colors duration-300`}
-            >
-              <div className="flex items-center justify-between mb-5 pb-2 border-b ${borderColor}">
-                <h2 className={`text-xl font-semibold ${textColor}`}>
-                  Vehicle Information
-                </h2>
-                <Link
-                  to={`/update-vehicle-info`}
-                  className={`flex items-center px-3 py-1.5 rounded-lg ${buttonBg} ${textColor} transition-all text-sm hover:opacity-90`}
-                >
-                  <FiEdit className="mr-2" /> Update
-                </Link>
-              </div>
-
-              {profile.vehicles && profile.vehicles.length > 0 ? (
-                <div className="space-y-5">
-                  {profile.vehicles.map((vehicle: any) => (
-                    <div
-                      key={vehicle.id}
-                      className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"}`}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className={`font-semibold ${textColor}`}>
-                          {vehicle.model} ({vehicle.type})
-                        </h3>
-                        <span
-                          className={`text-sm px-3 py-1 rounded-full ${darkMode ? "bg-gray-600 text-gray-100" : "bg-blue-100 text-blue-800"}`}
-                        >
-                          {vehicle.color}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className={secondaryText}>License Plate</p>
-                          <p className={textColor}>{vehicle.numberPlate}</p>
-                        </div>
-                        <div>
-                          <p className={secondaryText}>Name</p>
-                          <p className={textColor}>{vehicle.name}</p>
-                        </div>
-                      </div>
-                      {vehicle.vehiclePics &&
-                        vehicle.vehiclePics.length > 0 && (
-                          <div className="mt-4">
-                            <h4
-                              className={`text-sm font-medium mb-2 ${secondaryText}`}
-                            >
-                              Vehicle Photos
-                            </h4>
-                            <div className="grid grid-cols-2 gap-2">
-                              {vehicle.vehiclePics.map(
-                                (pic: string, index: number) => (
-                                  <img
-                                    key={index}
-                                    src={pic}
-                                    alt={`Vehicle ${index + 1}`}
-                                    className="rounded-lg w-full h-24 object-cover"
-                                  />
-                                )
-                              )}
-                            </div>
-                          </div>
-                        )}
-                    </div>
-                  ))}
+            {/* Vehicle Info Card - Uber-style vehicle card */}
+            {profile.driver && (
+              <div
+                className={`${cardBg} shadow-sm rounded-lg p-5 border ${borderColor} transition-colors duration-300`}
+              >
+                <div className="flex items-center justify-between mb-4 pb-2 border-b ${borderColor}">
+                  <h2 className={`text-lg font-semibold ${textColor}`}>
+                    Vehicle Information
+                  </h2>
+                  <Link
+                    to="/update-vehicle-info"
+                    className={`flex items-center px-3 py-1 rounded-lg ${buttonBg} text-white transition-all text-xs font-medium`}
+                  >
+                    <FiEdit className="mr-1" /> Edit
+                  </Link>
                 </div>
-              ) : (
-                <p className={secondaryText}>
-                  No vehicle information available
-                </p>
-              )}
-            </div>
+
+                {profile.vehicles ? (
+                  <div className="space-y-4">
+                    {/* Vehicle Image */}
+                    {profile.vehicles.vehiclePics && (
+                      <div className="relative w-full h-40 rounded-lg overflow-hidden mb-3">
+                        <img
+                          src={profile.vehicles.vehiclePics}
+                          alt={`${profile.vehicles.name || "Vehicle"} photo`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              "/default-vehicle.png";
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Vehicle Details - Uber-style compact info */}
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <p className={`${secondaryText} text-xs`}>Make</p>
+                        <p className={textColor}>
+                          {profile.vehicles.name || "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className={`${secondaryText} text-xs`}>Model</p>
+                        <p className={textColor}>
+                          {profile.vehicles.model || "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className={`${secondaryText} text-xs`}>Plate</p>
+                        <p className={textColor}>
+                          {profile.vehicles.numberPlate || "Not registered"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className={`${secondaryText} text-xs`}>Color</p>
+                        <p className={textColor}>
+                          {profile.vehicles.color || "—"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={`text-center py-6 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-100"}`}
+                  >
+                    <FiTruck
+                      className={`mx-auto text-2xl mb-2 ${secondaryText}`}
+                    />
+                    <p className={`text-sm ${textColor} mb-1`}>
+                      No vehicle registered
+                    </p>
+                    <Link
+                      to="/update-vehicle-info"
+                      className={`inline-flex items-center px-3 py-1 rounded-lg ${buttonBg} text-white transition-all text-xs font-medium mt-2`}
+                    >
+                      <FiPlus className="mr-1" /> Add Vehicle
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+
+          {/* Uber-style action button at bottom */}
+          {profile.driver && (
+            <div className="mt-8 text-center">
+              <button
+                className={`px-6 py-3 rounded-lg ${accentColor} bg-black text-white font-medium hover:bg-gray-900 transition-colors`}
+              >
+                Go Online
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div className={`flex justify-center items-center h-screen ${bgColor}`}>
           <div
-            className={`${cardBg} shadow-xl rounded-xl p-8 max-w-md text-center border ${borderColor}`}
+            className={`${cardBg} shadow-lg rounded-lg p-6 max-w-md text-center border ${borderColor}`}
           >
-            <h2 className={`text-2xl font-semibold ${textColor} mb-3`}>
+            <h2 className={`text-xl font-semibold ${textColor} mb-3`}>
               User not found
             </h2>
             <p className={secondaryText}>

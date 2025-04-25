@@ -24,6 +24,8 @@ enum VehicleType {
   HEAVY
 }
 
+
+
 model Review {
   id         String @id @default(uuid())
   reviewer   User   @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
@@ -32,13 +34,10 @@ model Review {
 }
 
 model Complain {
-  id           String   @id @default(uuid())
-  complainer   User     @relation("ComplainerRelation", fields: [complainerId], references: [id], onDelete: Cascade)
+  id           String @id @default(uuid())
+  complainer   User   @relation(fields: [complainerId], references: [id], onDelete: Cascade)
   complainerId String
   complain     String
-  target       User     @relation("TargetRelation", fields: [targetId], references: [id])
-  targetId     String
-  createdAt    DateTime @default(now())
 }
 
 model User {
@@ -49,17 +48,15 @@ model User {
   password String
   gender   Gender  @default(MALE)
   driver   Boolean @default(false)
-  warnings Int     @default(0)
 
-  profilePic     String?
-  isSuspended    Boolean    @default(false)
-  type           Type       @default(STUDENT)
-  isAdmin        Boolean    @default(false)
-  phone          String?
-  rating         Float      @default(0.0)
-  reviews        Review[]
-  complaintsMade Complain[] @relation("ComplainerRelation")
-  complains      Complain[] @relation("TargetRelation")
+  profilePic  String?
+  isSuspended Boolean    @default(false)
+  type        Type       @default(STUDENT)
+  isAdmin     Boolean    @default(false)
+  phone       String?
+  rating      Float      @default(0.0)
+  reviews     Review[]
+  complains   Complain[]
 
   conversations    Conversation[]
   notifications    Notification[]        @relation("UserNotifications")
@@ -71,10 +68,6 @@ model User {
 
   postAsPassenger CarpoolRequestPost[] @relation("PassengerPosts")
   postAsDriver    CarpoolRequestPost[] @relation("DriverPosts")
-
-  // isVerified                    Boolean   @default(false)
-  // verificationToken             String?
-  // verificationTokenExpiresAt    DateTime?
 }
 
 model Message {
@@ -82,8 +75,7 @@ model Message {
   message        String
   sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
   senderId       String
-  clean Boolean @default(true)
-  seen           Boolean      @default(false)
+  seen Boolean @default(false)
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationId String
   createdAt      DateTime     @default(now())
@@ -125,22 +117,22 @@ model RealTimeCarpoolRide {
 }
 
 model CarpoolRequestPost {
-  id            String   @id @default(uuid())
-  poster        User     @relation("PassengerPosts", fields: [posterId], references: [id], onDelete: Cascade)
-  posterId      String
-  otherUser     User?    @relation("DriverPosts", fields: [otherId], references: [id], onDelete: Cascade)
-  otherId       String?
-  time          DateTime @default(now()) @updatedAt
-  pickLocation  String
-  pickCordinate Int[]    @default([])
-  dropCordinate Int[]    @default([])
-  dropLocation  String
-  isAccepted    Boolean  @default(false)
-  isSuccessful  Boolean  @default(false)
-  caption       String
-  cost          Float
+  id           String   @id @default(uuid())
+  poster       User     @relation("PassengerPosts", fields: [posterId], references: [id], onDelete: Cascade)
+  posterId     String
+  otherUser    User?    @relation("DriverPosts", fields: [otherId], references: [id], onDelete: Cascade)
+  otherId      String?
+  time         DateTime @default(now()) @updatedAt
+  pickLocation String
+  pickCordinate Int[] @default([])
+  dropCordinate Int[] @default([])
+  dropLocation String
+  isAccepted   Boolean  @default(false)
+  isSuccessful Boolean @default(false)
+  caption      String
+  cost         Float
   departureTime DateTime @default(now())
-  seats         Int      @default(1)
+  seats Int @default(1)
 }
 
 model Notification {
@@ -161,3 +153,8 @@ model EmailVerification {
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
+// model UserOTP {
+//   id String @id @default(uuid())
+//   email String
+//   otp String
+// }

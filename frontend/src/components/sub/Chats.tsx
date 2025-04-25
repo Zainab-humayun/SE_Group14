@@ -5,10 +5,9 @@ import { useSocketContext } from "../../context/socketContext";
 import { useTheme } from "../../context/themeContext";
 import { v4 as uuidv4 } from "uuid";
 import { FiSend, FiMoreHorizontal, FiHeart, FiSmile } from "react-icons/fi";
-import { IoCheckmarkDone} from "react-icons/io5";
+import { IoCheckmarkDone } from "react-icons/io5";
 import { GeneralContext } from "../../context/generalContext";
 import { useNavigate } from "react-router-dom";
-
 
 type ChatsProps = {
   currentChat: string | null;
@@ -28,49 +27,55 @@ interface Message {
   editedAt?: string;
   sender: User;
   seen?: boolean;
-  conversationId:string
+  conversationId: string;
 }
+
 
 const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
   const auth = useContext(AuthContext);
-  
-  if (!auth) return null;
-  const { accessToken, user } = auth;
-
+  const generalContext = useContext(GeneralContext);
+  const { socket, onlineUsers } = useSocketContext();
   const { darkMode } = useTheme();
-  const [chats, setChats] = useState<any>([]);
+  const navigate = useNavigate();
+  
+  if (!auth || !generalContext) return null;
+  
+  const { accessToken, user } = auth;
+  const [chats, setChats] = useState<Message[]>([]);
   const [message, setMessage] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [otherUser, setOtherUser] = useState<User | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
+  const [userScrolling, setUserScrolling] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const prevChatsLengthRef = useRef(0);
 
-  const generalContext = useContext(GeneralContext);
-
-  if (!generalContext) {
-    return;
-  }
-  useEffect(() => {
-
-    const seenMessages = async () => {
-      const check = await getRequest(`/chat/${currentChat}/unread-messages-exist`, auth?.accessToken, setLoading, setError);
+  const seenMessages = useCallback(async () => {
+    if (!currentChat || !auth?.accessToken) return;
+    
+    try {
+      const check = await getRequest(
+        `/chat/${currentChat}/unread-messages-exist`, 
+        auth.accessToken, 
+        setLoading, 
+        setError
+      );
       
       if (check.unread) {
-        const res = await putRequest({}, `/chat/${currentChat}/read-messages`);
-        generalContext.setUnreadMessagesCount(generalContext.unreadMessagesCount - 1);
-        console.log("saw: ", res);
+        await putRequest({}, `/chat/${currentChat}/read-messages`);
+        generalContext.setUnreadMessagesCount(prev => prev - 1);
       }
-    } 
+    } catch (err) {
+      console.error("Error marking messages as seen:", err);
+    }
+  }, [currentChat, auth?.accessToken, generalContext]);
+
+  useEffect(() => {
     seenMessages();
-
-  }, [currentChat]);
-
-  // console.log("Current Chat: ", currentChat);
-
-  
-  const { socket, onlineUsers } = useSocketContext();
-
-
+  }, [currentChat, seenMessages]);
 
   // Dynamic styles based on dark mode
   const containerStyles = darkMode
@@ -94,83 +99,155 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
     ? "bg-gray-800 text-gray-300 border-gray-700"
     : "bg-white text-gray-500 border-gray-200";
 
-  // Scroll to bottom of messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  // Handle scroll events to determine if at bottom
+  const handleScroll = useCallback(() => {
+    if (!messagesContainerRef.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 20;
+    setIsScrolledToBottom(isAtBottom);
+    
+    // Mark as user scrolling to prevent auto-scroll interference
+    if (!isAtBottom) {
+      setUserScrolling(true);
+    }
+  }, []);
 
+  // Debounced scroll handler to detect when user finishes scrolling
   useEffect(() => {
-    scrollToBottom();
-  }, [chats]);
+    let scrollTimeout: ReturnType<typeof setTimeout>;
 
-  useEffect(() => {
-    if (!currentChat) return;
-
-    const fetchMessages = async () => {
-      try {
-        setLoading(true);
-        const res = await getRequest(
-          `/chat/conversation/${currentChat}`,
-          accessToken,
-          setLoading,
-          setError
-        );
-        setChats(res?.messages || []);
-        
-        if (res?.users) {
-          const other = res.users.find((participant: User) => participant.id !== user?.id);
-          setOtherUser(other || null);
-        }
-      } catch (err: any) {
-        setError(err?.message || "Failed to fetch messages");
-      } finally {
-        setLoading(false);
+    const handleScrollEnd = () => {
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
       }
+      
+      scrollTimeout = setTimeout(() => {
+        const container = messagesContainerRef.current;
+        if (container) {
+          const { scrollTop, scrollHeight, clientHeight } = container;
+          const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 20;
+          
+          if (isAtBottom) {
+            setUserScrolling(false);
+          }
+        }
+      }, 150); // Adjust timeout as needed
     };
+    
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScrollEnd);
+      return () => {
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        container.removeEventListener('scroll', handleScrollEnd);
+      };
+    }
+  }, []);
 
-    fetchMessages();
+  // Scroll to bottom of messages only if already at bottom or new message from current user
+  const scrollToBottom = useCallback((force = false) => {
+    if (!messagesEndRef.current || (userScrolling && !force)) return;
+    
+    messagesEndRef.current.scrollIntoView({ 
+      behavior: initialLoad ? "auto" : "smooth", 
+      block: "end" 
+    });
+    
+    if (initialLoad) {
+      setInitialLoad(false);
+    }
+  }, [initialLoad, userScrolling]);
+  
+  // Effect for monitoring chat updates and determining when to auto-scroll
+  useEffect(() => {
+    const chatLengthChanged = chats.length !== prevChatsLengthRef.current;
+    prevChatsLengthRef.current = chats.length;
+    
+    // Initial load or empty chats - always scroll to bottom
+    if (initialLoad || chats.length === 0) {
+      setTimeout(() => scrollToBottom(true), 100);
+      return;
+    }
+    
+    if (chatLengthChanged) {
+      const lastMessage = chats[chats.length - 1];
+      const isOwnMessage = lastMessage?.sender?.id === user?.id;
+      
+      // Always scroll for own messages, or if user is already at bottom
+      if (isOwnMessage || isScrolledToBottom) {
+        setTimeout(() => scrollToBottom(isOwnMessage), 50);
+      }
+    }
+  }, [chats, scrollToBottom, user?.id, initialLoad, isScrolledToBottom]);
+
+  const fetchMessages = useCallback(async () => {
+    if (!currentChat || !accessToken || !user?.id) return;
+
+    try {
+      setLoading(true);
+      const res = await getRequest(
+        `/chat/conversation/${currentChat}`,
+        accessToken,
+        setLoading,
+        setError
+      );
+      
+      setChats(res?.messages || []);
+      setInitialLoad(true); 
+      prevChatsLengthRef.current = res?.messages?.length || 0;
+      
+      if (res?.users) {
+        const other = res.users.find((participant: User) => participant.id !== user.id);
+        setOtherUser(other || null);
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to fetch messages");
+    } finally {
+      setLoading(false);
+    }
   }, [currentChat, accessToken, user?.id]);
+
+  useEffect(() => {
+    fetchMessages();
+    setUserScrolling(false);
+  }, [fetchMessages]);
 
   useEffect(() => {
     if (!socket || !currentChat) return;
 
     const handleNewMessage = (newMessage: Message) => {
-      console.log("new message: ", newMessage.conversationId);
-      // if (newMessage.conversationId!==currentChat) {
-      //   generalContext.setUnreadMessagesCount(generalContext.unreadMessagesCount + 1);
-      // }
       if (newMessage.conversationId === currentChat) {
-        setChats((prev:any) => {
-          const exists = prev.some((msg:any) => msg.id === newMessage.id);
+        setChats(prev => {
+          const exists = prev.some(msg => msg.id === newMessage.id);
           return exists ? prev : [...prev, newMessage];
         });
-        
       }
-    
     };
 
     socket.on("newMessage", handleNewMessage);
-    // socket.on("messageSeen", (messageId: string) => {
-    //   setChats(prev => prev.map(msg => 
-    //     msg.id === messageId ? { ...msg, seen: true } : msg
-    //   ));
-    // });
 
     return () => {
       socket.off("newMessage", handleNewMessage);
-      // socket.off("messageSeen");
     };
   }, [socket, currentChat]);
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
 
   const sendMessage = useCallback(
     async (event: React.FormEvent) => {
       event.preventDefault();
-      if (!message.trim()) return;
-      if (!user || !currentChat) return;
+      if (!message.trim() || !user || !currentChat || !accessToken || !socket) return;
 
       const currentDateTime = new Date().toISOString();
       
-      const newMessage = {
+      const newMessage: Message = {
         id: uuidv4(),
         message: message,
         createdAt: currentDateTime,
@@ -181,23 +258,28 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
           fullname: user.fullname
         },
         seen: false,
-
+        conversationId: currentChat
       };
 
       // Optimistic update
-      setChats((prevChats) => [...prevChats, newMessage]);
+      setChats(prev => [...prev, newMessage]);
       setMessage("");
- 
+      
+      // Reset userScrolling when sending a message
+      setUserScrolling(false);
+
+      // Force scroll to bottom when sending a message
+      setTimeout(() => scrollToBottom(true), 50);
+
       try {
         const response = await postRequest(
           { message, currentDateTime, id: newMessage.id },
           `/chat/send-message/${currentChat}`,
-          accessToken,
-          undefined,
-          setError
+          accessToken
         );
+        // console.log("Message response: ", response);
 
-        socket?.emit("sendMessage", {
+        socket.emit("sendMessage", {
           ...response.message,
           conversationId: currentChat
         });
@@ -207,15 +289,15 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
         setChats(prev => prev.filter(msg => msg.id !== newMessage.id));
       }
     },
-    [message, currentChat, accessToken, socket, user]
+    [message, currentChat, accessToken, socket, user, scrollToBottom]
   );
 
-  const formatTime = (dateString: string) => {
+  const formatTime = useCallback((dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  }, []);
 
-  const formatDateHeader = (dateString: string) => {
+  const formatDateHeader = useCallback((dateString: string) => {
     const date = new Date(dateString);
     const today = new Date();
     const yesterday = new Date(today);
@@ -228,7 +310,7 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
     } else {
       return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
     }
-  };
+  }, []);
 
   // Group messages by date
   const groupedMessages = chats.reduce((acc, message) => {
@@ -239,16 +321,36 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
     acc[date].push(message);
     return acc;
   }, {} as Record<string, Message[]>);
-  const navigate = useNavigate();
 
- 
+  // New button to scroll to bottom if not already there
+  const ScrollToBottomButton = () => {
+    if (isScrolledToBottom) return null;
+    
+    return (
+      <button 
+        onClick={() => {
+          scrollToBottom(true);
+          setUserScrolling(false);
+        }}
+        className={`absolute bottom-16 right-4 p-2 rounded-full shadow-lg ${
+          darkMode ? 'bg-gray-700 text-blue-400' : 'bg-white text-blue-500'
+        } flex items-center justify-center transition-all duration-200 hover:scale-110`}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+        </svg>
+      </button>
+    );
+  };
+
+  // Custom scrollbar styles using CSS variables
+  const scrollbarThumbColor = darkMode ? '#4B5563' : '#CBD5E0';  // gray-600 or gray-300
+  const scrollbarTrackColor = darkMode ? '#1F2937' : '#F3F4F6';  // gray-800 or gray-100
+  const scrollbarHoverColor = darkMode ? '#6B7280' : '#9CA3AF';  // gray-500 or gray-400
 
   return (
     <div className={`flex flex-col h-full ${containerStyles}`}>
       {/* Chat Header with User Info */}
-      {/* <button className="text-gray-700 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400" onClick={handleBack}>
-        <FaArrowLeft className="text-2xl" />
-      </button> */}
       <div className={`p-3 border-b flex items-center justify-between sticky top-0 z-10 ${
         darkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"
       }`}>
@@ -260,6 +362,9 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
                   src={otherUser.profilePic || "/default-avatar.png"} 
                   alt={otherUser.fullname} 
                   className="w-8 h-8 rounded-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/default-avatar.png";
+                  }}
                 />
                 {onlineUsers.includes(otherUser.id) && (
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
@@ -281,8 +386,19 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
         </button>
       </div>
 
-      {/* Messages Area */}
-      <div className={`flex-1 overflow-y-auto p-4 ${darkMode ? 'bg-gray-800' : 'bg-[#fafafa]'}`}>
+      {/* Messages Area with CSS Styled Scrollbar */}
+      <div 
+        ref={messagesContainerRef}
+        className={`flex-1 overflow-y-auto p-4 ${darkMode ? 'bg-gray-800' : 'bg-[#fafafa]'} relative custom-scrollbar`}
+        style={{ 
+          // Use 'auto' for initial scroll behavior to prevent smooth scrolling on load
+          scrollBehavior: initialLoad ? 'auto' : 'smooth',
+          // Custom CSS variables for scrollbar styling
+          '--scrollbar-thumb': scrollbarThumbColor,
+          '--scrollbar-track': scrollbarTrackColor,
+          '--scrollbar-hover': scrollbarHoverColor,
+        } as React.CSSProperties}
+      >
         {loading ? (
           <div className="flex justify-center items-center h-full">
             <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${
@@ -323,7 +439,7 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
                   {date}
                 </span>
               </div>
-              {messages.map((msg:any) => (
+              {messages.map((msg) => (
                 <div
                   key={msg.id}
                   className={`flex mb-3 ${msg.sender.id === user?.id ? "justify-end" : "justify-start"}`}
@@ -334,6 +450,9 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
                         src={msg.sender.profilePic || "/default-avatar.png"} 
                         alt={msg.sender.fullname} 
                         className="w-6 h-6 rounded-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/default-avatar.png";
+                        }}
                       />
                     </div>
                   )}
@@ -363,6 +482,9 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
           ))
         )}
         <div ref={messagesEndRef} />
+        
+        {/* Scroll to bottom button */}
+        <ScrollToBottomButton />
       </div>
 
       {/* Message Input */}
@@ -397,6 +519,40 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
           )}
         </form>
       </div>
+
+      {/* Add CSS for custom scrollbar */}
+      <style>{`
+        /* Custom scrollbar styling */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: var(--scrollbar-track);
+          border-radius: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: var(--scrollbar-thumb);
+          border-radius: 8px;
+          transition: background-color 0.3s ease;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background-color: var(--scrollbar-hover);
+        }
+        
+        /* For Firefox */
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+        }
+        
+        /* Make sure scrollbar doesn't affect layout */
+        .custom-scrollbar {
+          overflow-y: overlay;
+        }
+      `}</style>
     </div>
   );
 };

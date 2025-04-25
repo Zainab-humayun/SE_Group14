@@ -5,6 +5,7 @@ import useImageUpload from '../hooks/useImageUpload';
 import useFileHandler from '../hooks/useFileHandler';
 import { AuthContext } from '../context/authContext';
 import { putRequest } from '../services/apiRequests';
+import { useNavigate } from 'react-router-dom';
 
 type VehicleType = 'TWO_WHEEL' | 'THREE_WHEEL' | 'FOUR_WHEEL' | 'HEAVY';
 
@@ -21,7 +22,6 @@ const UpdateVehicleInfo: React.FC = () => {
   const auth = useContext(AuthContext);
   const { darkMode } = useTheme();
   
-  // State for form data and UI
   const [vehicleData, setVehicleData] = useState<VehicleData>({
     type: 'FOUR_WHEEL',
     name: '',
@@ -34,7 +34,6 @@ const UpdateVehicleInfo: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Custom hooks for file handling
   const { selectedFile, previewUrl, handleFileChange } = useFileHandler();
   const { imageUrl, isLoading: isUploading, error: uploadError, uploadImage } = useImageUpload();
 
@@ -45,61 +44,69 @@ const UpdateVehicleInfo: React.FC = () => {
     }
   }, [imageUrl]);
 
-  console.log(imageUrl);
-  // Handle image upload separately
+  const navigate = useNavigate();
+
   const handleImageUpload = async () => {
-    if (selectedFile) {
-      try {
-        setError(null);
-        await uploadImage(selectedFile);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Image upload failed');
-        throw err;
-      }
+    if (!selectedFile) return null;
+    
+    try {
+      setError(null);
+      const url = await uploadImage(selectedFile);
+      if (!url) throw new Error('Image upload failed');
+      return url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Image upload failed');
+      throw err;
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!auth?.user) {
+  
+    if (!auth?.user || !auth?.accessToken) {
+      setError('Authentication required');
       return;
     };
-
+  
     setIsSubmitting(true);
     setError(null);
     setSuccessMessage(null);
-
-
-
+  
     try {
-      // 1. First upload the image if a new one was selected
+      // Initialize with existing image URL (default to empty string if null/undefined)
+      let finalImageUrl = vehicleData.vehiclePic || '';
+      
+      // Only upload if there's a new file selected
       if (selectedFile) {
-        await handleImageUpload();
+        const uploadedUrl = await handleImageUpload();
+        if (!uploadedUrl) {
+          throw new Error('Image upload failed');
+        }
+        finalImageUrl = uploadedUrl;
       }
-
-      // 2. Prepare the data for API submission
+  
+      // Ensure we have at least an empty string for the image URL
+      if (finalImageUrl === null) {
+        finalImageUrl = '';
+      }
+  
+      // Prepare submission data with the final image URL
       const submissionData = {
         ...vehicleData,
-        // Use the new image URL if available, otherwise keep the existing one
-        vehiclePic: imageUrl || null
+        vehiclePic: finalImageUrl
       };
-
-      // 3. Submit to your backend API
-      if (!auth?.accessToken) {
-        throw new Error('Authentication required');
-      }
-      console.log("Data: ", submissionData);
+  
+      // Submit to backend
       const response = await putRequest(
-        {data: submissionData},
+        { data: submissionData },
         '/update/update-vehicle-info',
-        // Your API endpoint
+        // auth.accessToken
       );
-
+  
       if (response) {
         setSuccessMessage('Vehicle information updated successfully!');
-        // Reset file selection after successful submission
+        navigate("/profile/"+auth.user.id);
+        // resetFile(); // Clear the file selection after successful submission
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update vehicle information');
@@ -107,8 +114,6 @@ const UpdateVehicleInfo: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
-  // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setVehicleData(prev => ({

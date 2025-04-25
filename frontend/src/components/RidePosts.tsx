@@ -4,6 +4,7 @@ import { AuthContext } from "../context/authContext";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTheme } from "../context/themeContext";
+import { useNavigate } from "react-router-dom";
 import {
   FaCar,
   FaMoneyBillWave,
@@ -13,40 +14,27 @@ import {
 } from "react-icons/fa";
 import { IoCheckmarkDoneCircle } from "react-icons/io5";
 
-interface Post {
-  id: string;
-  poster: {
-    id: string;
-    username: string;
-    profilePic: string;
-    vehicles: any;
-  };
-  pickLocation: string;
-  dropLocation: string;
-  cost: number;
-  time: string;
-  isAccepted: boolean;
-  departureTime: string;
-  seets: number;
-}
-
 const RidePosts = () => {
-  // Context hooks
   const auth = useContext(AuthContext);
   const { darkMode } = useTheme();
 
-  // State management
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [notification] = useState("You got a ride request!");
 
-  // API endpoints
-  const url = "/rides/ride-requests";
-  const postUrl = "/notifications/create";
+  const navigate = useNavigate();
 
-  // Memoized styles
+  const blueColors = {
+    primary: "bg-blue-600",
+    hover: "hover:bg-blue-700",
+    focus: "focus:ring-blue-500",
+    border: "border-blue-600",
+    text: "text-white",
+    shadow: "shadow-md hover:shadow-lg",
+  };
+
   const styles = useMemo(
     () => ({
       container: darkMode
@@ -71,9 +59,9 @@ const RidePosts = () => {
     [darkMode]
   );
 
-  // Data fetching
   const fetchRidePosts = useCallback(async () => {
     if (!auth?.accessToken) return;
+    const url = "/rides/ride-requests";
 
     setLoading(true);
     setError(null);
@@ -85,8 +73,13 @@ const RidePosts = () => {
         setError
       );
 
-      console.log("Rides: ", response);
-      setPosts(response || []);
+      const postsWithCoords = response.map((post: any) => ({
+        ...post,
+        pickLocationCoords: post.pickLocationCoords || [0, 0],
+        dropLocationCoords: post.dropLocationCoords || [0, 0],
+      }));
+
+      setPosts(postsWithCoords || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch posts");
     } finally {
@@ -94,39 +87,43 @@ const RidePosts = () => {
     }
   }, [auth?.accessToken]);
 
-  // Handle ride acceptance
   const handleAccept = useCallback(
-  
-  
     async (postId: string, posterId: string) => {
-      console.log(postId);
       if (!auth?.accessToken) return;
 
+      const acceptUrl = "/rides/accept-request";
+
+      setError(null);
       try {
         const response = await postRequest(
-          { userId: posterId, message: notification },
-          postUrl,
+          { id: postId },
+          acceptUrl,
           auth.accessToken
         );
 
         if (response) {
           setSuccessMessage("Ride request accepted successfully!");
           setTimeout(() => setSuccessMessage(null), 3000);
-          fetchRidePosts(); // Refresh the list
+          fetchRidePosts();
+          setTimeout(() => {
+            navigate("/ride/" + postId);
+          }, 500);
         }
       } catch (err: any) {
-        setError(err instanceof Error ? err.message : "Failed to accept ride");
+        if (err.response && err.response.data && err.response.data.error) {
+          setError(err.response.data.error);
+        } else {
+          setError(err instanceof Error ? err.message : "Failed to accept ride");
+        }
       }
     },
-    [auth?.accessToken, notification, fetchRidePosts]
+    [auth?.accessToken, fetchRidePosts, navigate]
   );
 
-  // Initial data load
   useEffect(() => {
     fetchRidePosts();
   }, [fetchRidePosts]);
 
-  // Render loading/error states
   if (!auth) {
     return (
       <div
@@ -154,7 +151,10 @@ const RidePosts = () => {
       >
         <p>Error: {error}</p>
         <button
-          onClick={fetchRidePosts}
+          onClick={() => {
+            setError(null);
+            fetchRidePosts();
+          }}
           className={`mt-4 px-4 py-2 rounded-lg ${darkMode ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-500 hover:bg-blue-600"} text-white transition-colors`}
         >
           Retry
@@ -163,9 +163,14 @@ const RidePosts = () => {
     );
   }
 
+
+  // useEffect(() => {
+
+  // }, []);
+
   return (
     <div
-      className={`max-w-3xl mx-auto p-4 md:p-6 rounded-xl ${styles.container}`}
+      className={`max-w-3xl mx-auto p-0 md:p-4 rounded-xl ${styles.container}`}
     >
       <h3
         className={`text-2xl font-bold mb-6 text-center ${styles.text} flex items-center justify-center gap-2`}
@@ -201,7 +206,6 @@ const RidePosts = () => {
               className={`rounded-xl p-5 border transition-all ${styles.card}`}
             >
               <div className="flex flex-col space-y-4">
-                {/* Poster Info */}
                 <Link
                   to={`/user/${post.poster.id}`}
                   className="flex items-center gap-3 hover:opacity-90 transition-opacity"
@@ -234,13 +238,9 @@ const RidePosts = () => {
                 </Link>
                 <hr />
 
-                {/* Ride Details */}
                 <div className={`space-y-6 ${styles.text}`}>
-                  {/* Location Section */}
                   <div className="space-y-4">
-                    {/* Pickup/Dropoff Section */}
                     <div className="space-y-3">
-                      {/* Pickup */}
                       <div className="flex items-start gap-3">
                         <FaMapMarkerAlt
                           className={`mt-1 ${darkMode ? "text-blue-400" : "text-blue-500"}`}
@@ -253,7 +253,6 @@ const RidePosts = () => {
                         </div>
                       </div>
 
-                      {/* Dropoff */}
                       <div className="flex items-start gap-3">
                         <FaMapMarkerAlt
                           className={`mt-1 ${darkMode ? "text-red-400" : "text-red-500"}`}
@@ -266,33 +265,13 @@ const RidePosts = () => {
                         </div>
                       </div>
                     </div>
-
-                    <div className="flex flex-row md:flex-row gap-6">
-                      {/* Map Placeholder */}
-                      <div
-                        className={`flex-1 h-48 rounded-lg border ${
-                          darkMode
-                            ? "bg-gray-800 border-gray-700"
-                            : "bg-gray-100 border-gray-300"
-                        }`}
-                      >
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                          Map Preview
-                        </div>
-                      </div>
-
-                      {/* Quick Details */}
-                    
-                    </div>
                   </div>
 
                   <hr
                     className={`${darkMode ? "border-gray-700" : "border-gray-200"}`}
                   />
 
-                  {/* Ride Details Grid */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {/* Seats */}
                     <div className="flex items-center gap-3">
                       <FaClock
                         className={`${darkMode ? "text-yellow-400" : "text-yellow-500"}`}
@@ -310,7 +289,6 @@ const RidePosts = () => {
                       </div>
                     </div>
 
-                    {/* Fare */}
                     <div className="flex items-center gap-3">
                       <FaMoneyBillWave
                         className={`${darkMode ? "text-green-400" : "text-green-500"}`}
@@ -325,7 +303,6 @@ const RidePosts = () => {
                       </div>
                     </div>
 
-                    {/* Passengers */}
                     <div className="flex items-center gap-3">
                       <FaUsers
                         className={`${darkMode ? "text-purple-400" : "text-purple-500"}`}
@@ -338,7 +315,6 @@ const RidePosts = () => {
                       </div>
                     </div>
 
-                    {/* Duration */}
                     <div className="flex items-center gap-3">
                       <FaCar
                         className={`${darkMode ? "text-purple-400" : "text-purple-500"}`}
@@ -347,27 +323,31 @@ const RidePosts = () => {
                         <p className="text-sm font-medium text-gray-500">
                           Vehicle
                         </p>
-                        <p className="text-sm">{"dasd"}</p>
+                        <p className="text-sm">{post.vehicleType || "N/A"}</p>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                {/* Action Button */}
-                <button
-                  onClick={() => handleAccept(post.id, post.poster.id)}
-                  className={`w-full py-2.5 mt-2 rounded-lg font-medium transition-all ${styles.button(post.isAccepted)} flex items-center justify-center gap-2`}
-                  disabled={post.isAccepted}
-                >
-                  {post.isAccepted ? (
-                    <>
-                      <IoCheckmarkDoneCircle className="text-lg" />
-                      Accepted
-                    </>
-                  ) : (
-                    "Accept Ride"
-                  )}
-                </button>
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => handleAccept(post.id, post.poster.id)}
+                    className={`w-[30%] py-2.5 mt-2 rounded-3xl font-medium transition-all ${
+                      post.isAccepted
+                        ? "bg-gray-500 text-white cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-700 text-white"
+                    } flex items-center justify-center gap-2`}
+                    disabled={post.isAccepted}
+                  >
+                    {post.isAccepted ? (
+                      <>
+                        <IoCheckmarkDoneCircle className="text-lg" />
+                        Accepted
+                      </>
+                    ) : (
+                      "Accept Ride"
+                    )}
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}

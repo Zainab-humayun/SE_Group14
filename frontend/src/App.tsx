@@ -5,15 +5,17 @@ import LoginForm from "./pages/Login";
 import ProtectedRoute from "./context/ProtectedRoutes";
 import UserProfile from "./pages/UserProfile";
 import Dashboard from "./pages/Dashboard";
+import RideDetailPage from "./pages/RideDetailPage";
 import Signup from "./pages/Signup";
 import Header from "./components/Header";
 import { AuthContext } from "./context/authContext";
 import CreateRidePost from "./pages/CreateRidePost";
-import { useTheme } from "./context/themeContext"; // Import the theme context
+import { useTheme } from "./context/themeContext"; 
 import { useSocketContext } from "./context/socketContext";
 import UnauthenticatedHeader from "./components/UnauthenticatedHeader";
 import { GeneralContext } from "./context/generalContext";
 import UpdateVehicleInfo from "./pages/UpdateVehicleInfo";
+import Trending from "./pages/Trending";
 
 const App: React.FC = () => {
   const auth = useContext(AuthContext);
@@ -40,6 +42,7 @@ const App: React.FC = () => {
     if (!socket) return;
     
     const handleNewMessage = (newMessage: any) => {
+      console.log("New Message is here: ", newMessage);
       const isCurrentUser = newMessage.sender.id === auth.user?.id;
       const isExistingConversation = generalContext.conversationIds.includes(
         newMessage.conversationId
@@ -50,8 +53,6 @@ const App: React.FC = () => {
         message: newMessage.message
       }
 
-
-  
       if (!isExistingConversation && !isCurrentUser) {
         generalContext.setLatestMessage(latestMessage);
 
@@ -76,6 +77,7 @@ const App: React.FC = () => {
     if (!socket) return;
 
     const handleNewNotifications = (newNotification: any) => {
+
       console.log("New Notification:", newNotification);
       setNotifications((prev) => [...prev, newNotification]);
       generalContext.setUnreadNotificationCount(
@@ -129,7 +131,7 @@ const App: React.FC = () => {
             element={!auth.user ? <LoginForm /> : <Navigate to="/" />}
           />
           <Route
-            path="/:userId"
+            path="/profile/:userId"
             element={
               <ProtectedRoute>
                 <UserProfile />
@@ -149,6 +151,22 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <UpdateVehicleInfo></UpdateVehicleInfo>
+              </ProtectedRoute>
+            }
+          ></Route>
+          <Route
+            path="/ride/:postId"
+            element={
+              <ProtectedRoute>
+                <RideDetailPage></RideDetailPage>
+              </ProtectedRoute>
+            }
+          ></Route>
+            <Route
+            path="/trending"
+            element={
+              <ProtectedRoute>
+                <Trending></Trending>
               </ProtectedRoute>
             }
           ></Route>

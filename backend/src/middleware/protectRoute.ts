@@ -11,6 +11,7 @@ declare global {
         id: string;
         username: string;
         fullname: string;
+        driver:boolean
       };
     }
   }
@@ -37,7 +38,10 @@ const verify = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string) as DecodedToken;
 
-      const user = await prisma.user.findUnique({ where: { username: decoded.username } });
+      const user = await prisma.user.findUnique({
+        where: { username: decoded.username },
+        select: {username:true, fullname:true, id:true, driver:true}
+      });
 
       if (!user) {
         res.status(403).json("User not found!");
@@ -58,7 +62,10 @@ const verify = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET as string) as DecodedToken;
 
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id }, select: {
+      username:true, id:true, driver:true, fullname:true
+    } });
 
     if (!user) {
       res.status(403).json("User not found!");

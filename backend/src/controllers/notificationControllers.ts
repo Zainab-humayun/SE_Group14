@@ -40,13 +40,11 @@ export const getAllNotifications = async (req: Request, res: Response) => {
   } 
 }
 
+
 export const createNotification = async (req: Request, res: Response) => {
   try {
     const { userId, message } = req.body;
     const notifierId = req.user?.id;
-
-    // console.log("ID: ", userId);
-    // console.log(message);
 
     if (!userId || !notifierId || !message) {
       res.status(400).json({ error: "Missing required fields" });
@@ -60,7 +58,6 @@ export const createNotification = async (req: Request, res: Response) => {
       },
     });
 
-    const receiverSocketId = getReceiverSocketId(userId);
 
     const user = await prisma.user.findUnique({
       where: { id: notifierId },
@@ -76,6 +73,7 @@ export const createNotification = async (req: Request, res: Response) => {
       return;
     }
 
+    const receiverSocketId = getReceiverSocketId(userId);
 
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newNotification", {
@@ -157,3 +155,4 @@ export const getUnreadCount = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal server error!" });
   }
 }
+

@@ -5,7 +5,6 @@ import prisma from "../db/prisma.js";
 import bcrypt from "bcrypt";
 import { hashPassword } from "../utils/hashPassword.js";
 import { Gender } from "@prisma/client";
-import { sendVerificationEmail } from "../services/email.js";
 
 
 export const loginFunc = async (req: Request, res: Response) => {
@@ -97,67 +96,14 @@ export const signupFunc = async (req: Request, res: Response) => {
   }
 };
 
-const OTP_TTL_MS = 5 * 60 * 1000; 
-const OTP_SALT_ROUNDS = 10;
 
-export const sendOTP = async (req: Request, res: Response) => {
-  const { email } = req.body;
-  if (!email) {
-    res.status(400).json({ error: 'Email is required' });
-    return;
-}
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+// const verifyEmail = async (req: Request, res: Response) => {
+//   try {
 
-  const hashed = await bcrypt.hash(otp, OTP_SALT_ROUNDS);
-  const expiresAt = new Date(Date.now() + OTP_TTL_MS);
-
-  await prisma.emailVerification.upsert({
-    where: { email },
-    create: { email, otp: hashed, expiresAt },
-    update: { otp: hashed, expiresAt },
-  });
-
-  const ok = await sendVerificationEmail(email, otp);
-  if (!ok) {
-    res.status(500).json({ error: 'Failed to send OTP email' });
-    return;
-  }
-
-  console.log(`🔔 OTP ${otp} for ${email} saved & mailed.`);
-  res.json({ message: 'OTP sent successfully' });
-};
-
-export const verifyOTP = async (req: Request, res: Response) => {
-  const { email, otp } = req.body;
-  if (!email || !otp) {
-    res.status(400).json({ error: 'Email and OTP required' });
-    return;
-}
-
-  const record = await prisma.emailVerification.findUnique({ where: { email } });
-  if (!record) {
-    res.status(400).json({ error: 'OTP not found' });
-    return;
-  }
-  if (new Date() > record.expiresAt) {
-    await prisma.emailVerification.delete({ where: { email } });
-    res.status(400).json({ error: 'OTP expired' });
-    return;
-  }
-
-  const valid = await bcrypt.compare(otp, record.otp);
-  if (!valid) {
-    res.status(400).json({ error: 'Invalid OTP' });
-    return;
-  }
-  
-  await prisma.emailVerification.delete({ where: { email } });
-
-  const token = jwt.sign({ email }, process.env.EMAIL_VERIFICATION_SECRET!, { expiresIn: '5m' });
-  res.json({ verificationToken: token });
-};
-
-
+//   } catch (err: any) {
+//     res.status(500).json({ error: "Internal server error! Something went wrong while verifying the email." });
+//   }
+// }
 export const logoutFunc = async (req: Request, res: Response) => {
   console.log(req.url);
   res.clearCookie("refreshToken", { path: "/" });
