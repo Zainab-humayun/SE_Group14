@@ -1,6 +1,14 @@
 import { Request, Response } from "express";
 import prisma from "../db/prisma.js";
 
+interface CustomRequest extends Request {
+  user?: {
+    id: string;
+    username: string;
+    fullname: string;
+    driver: boolean;
+  };
+}
 
 export const createComplain = async (req: Request, res: Response) => {
   try {
@@ -218,5 +226,45 @@ export const getTrendingUsers = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+export const submitUserRating = async (req: Request, res: Response) => {
+  try {
+    const { reviewedUserId, rating } = req.body;
+
+    if (!reviewedUserId || rating == null) {
+      res.status(400).json({ error: "Missing required fields." });
+      return;
+    }
+
+    // Create new review
+    await prisma.review.create({
+      data: {
+        rating,
+        reviewedUser: { connect: { id: reviewedUserId } },
+      },
+    });
+
+    // Recalculate average rating
+    const allReviews = await prisma.review.findMany({
+      where: { reviewedUserId },
+      select: { rating: true },
+    });
+
+    const avgRating =
+      allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
+
+    // Update the user's rating
+    await prisma.user.update({
+      where: { id: reviewedUserId },
+      data: { rating: avgRating },
+    });
+
+    res.status(200).json({ message: "Rating submitted successfully." });
+  } catch (err: any) {
+    console.error("Error submitting rating:", err);
+    res.status(500).json({ error: "Something went wrong." });
   }
 };

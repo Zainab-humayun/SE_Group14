@@ -25,10 +25,10 @@ enum VehicleType {
 }
 
 model Review {
-  id         String @id @default(uuid())
-  reviewer   User   @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
-  reviewerId String
-  comment    String
+  id             String  @id @default(uuid())
+  reviewedUser   User    @relation("Reviewed", fields: [reviewedUserId], references: [id], onDelete: Cascade)
+  reviewedUserId String
+  rating         Int   // Add this line
 }
 
 model Complain {
@@ -71,7 +71,7 @@ model User {
 
   postAsPassenger CarpoolRequestPost[] @relation("PassengerPosts")
   postAsDriver    CarpoolRequestPost[] @relation("DriverPosts")
-
+  reviews        Review[] @relation("Reviewed") // renamed from just "reviews" if needed
   // isVerified                    Boolean   @default(false)
   // verificationToken             String?
   // verificationTokenExpiresAt    DateTime?
