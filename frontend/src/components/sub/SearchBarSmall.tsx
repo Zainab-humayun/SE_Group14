@@ -36,7 +36,6 @@ const SearchBarSmall = ({
     return null;
   }
 
-  // Styling classes (same as before)
   const searchInputBg = darkMode
     ? "bg-gray-700 border-gray-600 placeholder-gray-400 text-gray-100 focus:bg-gray-600 focus:border-blue-400 focus:ring-blue-500"
     : "bg-gray-100 border-gray-300 placeholder-gray-500 text-gray-900 focus:bg-white focus:border-blue-500 focus:ring-blue-300";
@@ -46,7 +45,6 @@ const SearchBarSmall = ({
   const resultHoverBg = darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50";
   const dividerColor = darkMode ? "divide-gray-700" : "divide-gray-200";
 
-  // Perform search with debouncing
   useEffect(() => {
     if (searchQuery.trim().length === 0) {
       setSearchResults([]);
@@ -77,7 +75,7 @@ const SearchBarSmall = ({
       } finally {
         setIsLoading(false);
       }
-    }, 300); // 300ms debounce delay
+    }, 300); 
 
     return () => {
       if (debounceTimeout.current) {
@@ -98,7 +96,6 @@ const SearchBarSmall = ({
     setSearchQuery(e.target.value);
   };
 
-  // Prevent form submission (we're handling search on input change)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
   };
@@ -107,13 +104,11 @@ const SearchBarSmall = ({
     <>
       {isSearchOpen && (
         <div className="fixed inset-0 top-14 z-50 flex justify-center items-start pt-4">
-          {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" 
             onClick={handleClose}
           />
           
-          {/* Search content */}
           <div
             className={`relative ${mobileMenuBg} ${mobileMenuText} shadow-xl rounded-lg p-4 w-[95%] max-w-lg ${darkMode ? "bg-opacity-95" : "bg-opacity-98"} z-10 border ${darkMode ? "border-gray-700" : "border-gray-200"}`}
           >

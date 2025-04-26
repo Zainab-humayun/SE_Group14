@@ -46,7 +46,6 @@ const ConversationBar: React.FC<ConversationBarProps> = ({
 
  
 
-  // Dynamic styles based on dark mode
   const containerStyles = darkMode
     ? "bg-gray-800 border-gray-700 text-gray-100"
     : "bg-white border-gray-200 text-gray-800";
@@ -86,7 +85,6 @@ const ConversationBar: React.FC<ConversationBarProps> = ({
     }
   }, [accessToken]);
 
-  // Filter conversations based on search query
   const filteredConversations = conversations.filter((conv) => {
     const otherUser = conv.users.find((user: any) => user.id !== auth.user?.id);
     return otherUser?.username
@@ -115,7 +113,6 @@ const ConversationBar: React.FC<ConversationBarProps> = ({
             : updatedConversations[conversationIndex].unreadCount
         };
 
-        // Move conversation to top
         updatedConversations.splice(conversationIndex, 1);
         updatedConversations.unshift(targetConversation);
 
@@ -133,12 +130,10 @@ const ConversationBar: React.FC<ConversationBarProps> = ({
     <div
       className={`w-full h-full rounded-xl shadow-lg overflow-hidden border flex flex-col ${containerStyles}`}
     >
-      {/* ... (rest of your JSX remains the same) ... */}
       <h2 className={`px-4 py-3 text-lg font-semibold ${darkMode ? "text-gray-100" : "text-gray-800"}`}>
         Chats
       </h2>
 
-      {/* Search Bar */}
       <div className="px-4 pb-2">
         <input
           type="text"
@@ -149,7 +144,6 @@ const ConversationBar: React.FC<ConversationBarProps> = ({
         />
       </div>
 
-      {/* Loading & Error Handling */}
       {loading && (
         <div className="flex justify-center items-center py-4">
           <div
@@ -174,7 +168,6 @@ const ConversationBar: React.FC<ConversationBarProps> = ({
         </p>
       )}
 
-      {/* Conversation List */}
       <div className="flex-1 overflow-y-auto">
         {filteredConversations.map((conv) => {
           const otherUser = conv.users.find(

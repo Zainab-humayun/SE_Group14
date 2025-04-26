@@ -1,14 +1,12 @@
 import { Request, Response } from "express";
 import prisma from "../db/prisma.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
-import { error } from "console";
 import { checkForInappropriateContent } from "../utils/geminAIClient.js";
 
 export const getUserConversations = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
 
-    console.log("Requested user: ", userId);
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -36,13 +34,12 @@ export const getUserConversations = async (req: Request, res: Response) => {
             seen: true,
             message: true,
             senderId: true,
-            createdAt: true, // ✅ Add this to use for sorting
+            createdAt: true, 
           },
         },
       },
     });
 
-    // ✅ Sort conversations by latest message timestamp
     const sortedConversations = conversations.sort((a, b) => {
       const aTime = a.messages[0]?.createdAt ?? new Date(0);
       const bTime = b.messages[0]?.createdAt ?? new Date(0);
@@ -143,7 +140,6 @@ export const startConversation = async (req: Request, res: Response) => {
       include: { users: true },
     });
 
-    console.log("New conversation created:", newConversation.id);
     res.status(201).json(newConversation);
   } catch (err) {
     console.error("Error starting conversation:", err);
@@ -379,7 +375,6 @@ export const unreadMessagesExist = async (req: Request, res: Response) => {
     if (unreadMessages.length > 0) {
       found = true;
     }
-    console.log("Unread: ", found);
     res.status(200).json({ unread: found });
     return;
   } catch (err: any) {

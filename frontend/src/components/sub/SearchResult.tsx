@@ -29,7 +29,6 @@ const SearchBarDesktop = ({ darkMode = false }: SearchBarDesktopProps) => {
     return null;
   }
 
-  // Close results when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -64,7 +63,6 @@ const SearchBarDesktop = ({ darkMode = false }: SearchBarDesktopProps) => {
     }
   };
 
-  // Debounced search on input change
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchQuery) {
@@ -88,7 +86,6 @@ const SearchBarDesktop = ({ darkMode = false }: SearchBarDesktopProps) => {
 
   return (
     <div className="relative w-full max-w-md mx-4" ref={searchRef}>
-      {/* Search Bar */}
       <div className={`flex items-center rounded-full px-2 py-2 ${themeStyles.searchBarBg} ${showResults ? themeStyles.searchBarFocused : ''}`}>
         <svg 
           className={`h-5 w-5 ${themeStyles.iconColor} mr-2`}
@@ -118,14 +115,11 @@ const SearchBarDesktop = ({ darkMode = false }: SearchBarDesktopProps) => {
             }}
             className={`p-1 rounded-full ${themeStyles.iconColor} hover:bg-opacity-20 hover:bg-gray-500`}
           >
-            {/* <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg> */}
+         
           </button>
         )}
       </div>
 
-      {/* Results Dropdown */}
       {showResults && (
         <div className={`absolute mt-1 w-90% rounded-lg ${themeStyles.dropdownBg} ${themeStyles.shadow} z-50 overflow-hidden`}>
           {isLoading ? (

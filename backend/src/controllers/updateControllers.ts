@@ -1,6 +1,5 @@
 import { Response, Request } from "express";
 import prisma from "../db/prisma.js";
-import { error } from "console";
 
 
 export const updateUserProfilePic = async (req: Request, res: Response) => {
@@ -60,8 +59,8 @@ export const updateVehicleInfo = async (req: Request, res: Response) => {
 
     const baseData = {
       name,
-      type: type || 'FOURWHEEL', // default value if not provided
-      numberPlate: numberPlate || '', // empty string if not provided
+      type: type || 'FOURWHEEL', 
+      numberPlate: numberPlate || '', 
       model: model || '',
       color: color || '',
     };
@@ -74,7 +73,6 @@ export const updateVehicleInfo = async (req: Request, res: Response) => {
           vehiclePics: vehiclePic 
         }
       });
-      console.log("This one: ", updatedVehicle);
       
       res.status(200).json(updatedVehicle);
       return;
@@ -87,7 +85,6 @@ export const updateVehicleInfo = async (req: Request, res: Response) => {
         }
       });
 
-      console.log(newVehicle);
       res.status(201).json(newVehicle);
       return;
     }

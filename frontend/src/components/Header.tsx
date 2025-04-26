@@ -61,7 +61,6 @@ const Header: React.FC = () => {
   const readNotifications = async () => {
     const response = await putRequest({}, "/notifications/update");
     generalContext.setUnreadNotificationCount(0);
-    console.log(response);
   };
 
   const handleNewNotificationsOpen = () => {
@@ -72,7 +71,6 @@ const Header: React.FC = () => {
     setSearchOpen(false);
   };
 
-  // Theme-specific styles
   const headerBg = darkMode
     ? "bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800"
     : "bg-white shadow-sm border-b border-gray-100";
@@ -94,7 +92,6 @@ const Header: React.FC = () => {
     ? "bg-gray-700 border-gray-600 placeholder-gray-400 text-gray-100 focus:ring-2 focus:ring-indigo-500"
     : "bg-gray-50 border-gray-200 placeholder-gray-400 text-gray-800 focus:ring-2 focus:ring-blue-400";
 
-  // Button styles
 
   const fixed = screenWidth > 850 && "mr-40";
   const iconButtonStyle = `cursor-pointer text-lg transition-all duration-200 ${iconColor} ${hoverIconColor} hover:scale-110`;
@@ -119,7 +116,6 @@ const Header: React.FC = () => {
         )}
       </div>
 
-      {/* Desktop Navigation */}
       {screenWidth >= 720 ? (
         <nav className={`${fixed} flex gap-6 ${textColor}`}>
           <Link
@@ -169,7 +165,6 @@ const Header: React.FC = () => {
         </button>
       )}
 
-      {/* Icons Section */}
       <div className="flex items-center gap-5">
         {screenWidth <= 1000 && (
           <FontAwesomeIcon
@@ -234,7 +229,6 @@ const Header: React.FC = () => {
       </div>
       {isDropOpen && <DropDown />}
 
-      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="fixed top-14 left-0 w-full h-[calc(100vh-56px)] bg-black bg-opacity-50 flex justify-center items-start z-50">
           <div

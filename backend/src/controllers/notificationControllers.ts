@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../db/prisma.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
-import { error } from "console";
-import { read } from "fs";
 
 
 export const getAllNotifications = async (req: Request, res: Response) => {

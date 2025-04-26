@@ -3,7 +3,6 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { generateAccessToken, generateRefreshToken } from "../utils/generateTokens.js";
 import prisma from "../db/prisma.js";
 import bcrypt from "bcrypt";
-import { hashPassword } from "../utils/hashPassword.js";
 import { Gender } from "@prisma/client";
 import { sendVerificationEmail } from "../services/email.js";
 
@@ -182,7 +181,6 @@ export const getAuthenticatedUser = async (req: Request, res: Response) => {
       res.status(404).json({ error: "User not found" });
       return;
     }
-    // console.log(authUser);
 
     res.json(authUser);
   } catch (error) {

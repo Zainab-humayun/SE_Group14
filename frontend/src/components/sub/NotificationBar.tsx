@@ -34,7 +34,6 @@ const NotificationBar = () => {
   const accessToken = auth.accessToken;
   const url = "/notifications/all";
 
-  // Dynamic styles based on dark mode
   const containerStyles = darkMode
     ? "bg-gray-800 text-white border-gray-700"
     : "bg-white text-gray-900 border-gray-300";

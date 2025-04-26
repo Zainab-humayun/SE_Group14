@@ -14,16 +14,6 @@ router.post("/search-users", verify, getSearchedUserResults);
 router.get("/trending-users", verify, getTrendingUsers);
 router.post("/rate-user", verify, submitUserRating);
 
-router.get("/clean-messages", async (req: Request, res: Response) => {
-  try {
-    const result = await prisma.message.deleteMany();
-  
-    res.status(200).json({ message: "Database cleaned successfully"});
-  } catch (error) {
-    console.error("Error cleaning database:", error);
-    res.status(500).json({ error: "Failed to clean database", details: error });
-  }
-});
 
 
 export default router;

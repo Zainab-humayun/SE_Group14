@@ -184,9 +184,7 @@ const HomeLeftBar = () => {
                 <div className="flex flex-col gap-3">
                   <div className="flex justify-between items-start flex-wrap gap-2">
                     <div className="flex flex-col">
-                      {/* <h3 className={`font-semibold text-lg ${themeStyles.text.primary}`}>
-                        {request.otherId}
-                      </h3> */}
+                    
                       <div className="flex items-center gap-2">
                         <span className={`text-xs ${themeStyles.text.secondary}`}>
                           {formatRelativeTime(request.time)}

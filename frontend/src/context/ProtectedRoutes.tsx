@@ -15,7 +15,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   const res = authContext
 
-  console.log("Here: ", res);
 
   return res.user ? <>{children}</> : <Navigate to="/login" />;
 };

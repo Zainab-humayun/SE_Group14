@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import prisma from "../db/prisma.js";
-import { generateAccessToken, generateRefreshToken } from "../utils/generateTokens.js";
+import { generateAccessToken } from "../utils/generateTokens.js";
 
 
 declare global {

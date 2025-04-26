@@ -38,24 +38,24 @@ const Signup = () => {
     setPasswordStrength(strength);
   };
 
-  // const handleSendOTP = async () => {
-  //   if (!isEmailValid) return;
+  const handleSendOTP = async () => {
+    if (!isEmailValid) return;
     
-  //   try {
-  //     setIsSendingOTP(true);
-  //     setError(null);
-  //     const res = await verifyEmail(email);
-  //     if (res.success) {
-  //       setShowOTPField(true);
-  //     } else {
-  //       setError(res.message || "Failed to send OTP");
-  //     }
-  //   } catch (err: any) {
-  //     setError(err.response?.data?.error || err.message || "Failed to send OTP");
-  //   } finally {
-  //     setIsSendingOTP(false);
-  //   }
-  // };
+    try {
+      setIsSendingOTP(true);
+      setError(null);
+      const res = await verifyEmail(email);
+      if (res.success) {
+        setShowOTPField(true);
+      } else {
+        setError(res.message || "Failed to send OTP");
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || "Failed to send OTP");
+    } finally {
+      setIsSendingOTP(false);
+    }
+  };
 
   const handleVerifyOTP = async () => {
     if (otp.length !== 6) {
@@ -66,13 +66,13 @@ const Signup = () => {
     try {
       setLoading(true);
       setError(null);
-      // const res = await verifyOTP(email, otp);
-      // if (res.success) {
-      //   setIsEmailVerified(true);
-      //   setShowOTPField(false);
-      // } else {
-      //   setError(res.message || "Invalid OTP");
-      // }
+      const res = await verifyOTP(email, otp);
+      if (res.success) {
+        setIsEmailVerified(true);
+        setShowOTPField(false);
+      } else {
+        setError(res.message || "Invalid OTP");
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || "Verification failed");
     } finally {
@@ -88,16 +88,15 @@ const Signup = () => {
     const trimmedFullname = fullname.trim();
     const trimmedEmail = email.trim().toLowerCase();
 
-    // Validation checks
     if (!trimmedUsername || !trimmedFullname || !trimmedEmail || !password || !confirmPassword) {
       setError("All fields are required!");
       return;
     }
 
-    // if (!isEmailVerified) {
-    //   setError("Please verify your email first");
-    //   return;
-    // }
+    if (!isEmailVerified) {
+      setError("Please verify your email first");
+      return;
+    }
 
     if (trimmedUsername.length < 3 || trimmedUsername.length > 20) {
       setError("Username must be 3-20 characters");
@@ -249,7 +248,7 @@ const Signup = () => {
               {isEmailValid && !isEmailVerified && (
                 <button
                   type="button"
-                  // onClick={handleSendOTP}
+                  onClick={handleSendOTP}
                   disabled={isSendingOTP}
                   className="absolute right-2.5 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white text-xs px-2 py-1 rounded-lg hover:bg-blue-600 transition-colors"
                 >
@@ -287,7 +286,7 @@ const Signup = () => {
                   Check your email for the OTP. Didn't receive it?{' '}
                   <button 
                     type="button" 
-                    // onClick={handleSendOTP}
+                    onClick={handleSendOTP}
                     className="text-blue-500 hover:underline"
                   >
                     Resend OTP
@@ -384,10 +383,10 @@ const Signup = () => {
             
             <button
               type="submit"
-              // disabled={loading || !isEmailVerified}
-              // className={`w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 text-sm rounded-xl font-medium mt-2 hover:from-blue-600 hover:to-blue-700 transition-all ${
-              //   loading ? 'opacity-80 cursor-not-allowed' : 'shadow-md hover:shadow-lg'
-              // } ${!isEmailVerified ? 'opacity-70 cursor-not-allowed' : ''}`}
+              disabled={loading || !isEmailVerified}
+              className={`w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 text-sm rounded-xl font-medium mt-2 hover:from-blue-600 hover:to-blue-700 transition-all ${
+                loading ? 'opacity-80 cursor-not-allowed' : 'shadow-md hover:shadow-lg'
+              } ${!isEmailVerified ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
              Signup
             </button>

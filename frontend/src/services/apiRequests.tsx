@@ -6,20 +6,15 @@ export const putRequest = async (
   url: string,
 ): Promise<any> => {
   try {
-    console.log("das");
     const response = await axiosJWT.put(url, data, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
-    console.log("Response: ", response);
     return response.data;
   } catch (err: any) {
-    // if (err.response) {
-    // } else if (err.request) {
-    // } else {
-    // }
+  
     throw err; 
   }
 };

@@ -77,7 +77,6 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
     seenMessages();
   }, [currentChat, seenMessages]);
 
-  // Dynamic styles based on dark mode
   const containerStyles = darkMode
     ? "bg-gray-900 text-gray-100"
     : "bg-white text-gray-800";
@@ -99,7 +98,6 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
     ? "bg-gray-800 text-gray-300 border-gray-700"
     : "bg-white text-gray-500 border-gray-200";
 
-  // Handle scroll events to determine if at bottom
   const handleScroll = useCallback(() => {
     if (!messagesContainerRef.current) return;
     
@@ -107,13 +105,11 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
     const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 20;
     setIsScrolledToBottom(isAtBottom);
     
-    // Mark as user scrolling to prevent auto-scroll interference
     if (!isAtBottom) {
       setUserScrolling(true);
     }
   }, []);
 
-  // Debounced scroll handler to detect when user finishes scrolling
   useEffect(() => {
     let scrollTimeout: ReturnType<typeof setTimeout>;
 
@@ -132,7 +128,7 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
             setUserScrolling(false);
           }
         }
-      }, 150); // Adjust timeout as needed
+      }, 150); 
     };
     
     const container = messagesContainerRef.current;
@@ -145,7 +141,7 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
     }
   }, []);
 
-  // Scroll to bottom of messages only if already at bottom or new message from current user
+  
   const scrollToBottom = useCallback((force = false) => {
     if (!messagesEndRef.current || (userScrolling && !force)) return;
     
@@ -159,12 +155,10 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
     }
   }, [initialLoad, userScrolling]);
   
-  // Effect for monitoring chat updates and determining when to auto-scroll
   useEffect(() => {
     const chatLengthChanged = chats.length !== prevChatsLengthRef.current;
     prevChatsLengthRef.current = chats.length;
     
-    // Initial load or empty chats - always scroll to bottom
     if (initialLoad || chats.length === 0) {
       setTimeout(() => scrollToBottom(true), 100);
       return;
@@ -174,7 +168,6 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
       const lastMessage = chats[chats.length - 1];
       const isOwnMessage = lastMessage?.sender?.id === user?.id;
       
-      // Always scroll for own messages, or if user is already at bottom
       if (isOwnMessage || isScrolledToBottom) {
         setTimeout(() => scrollToBottom(isOwnMessage), 50);
       }
@@ -261,14 +254,11 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
         conversationId: currentChat
       };
 
-      // Optimistic update
       setChats(prev => [...prev, newMessage]);
       setMessage("");
       
-      // Reset userScrolling when sending a message
       setUserScrolling(false);
 
-      // Force scroll to bottom when sending a message
       setTimeout(() => scrollToBottom(true), 50);
 
       try {
@@ -277,7 +267,6 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
           `/chat/send-message/${currentChat}`,
           accessToken
         );
-        // console.log("Message response: ", response);
 
         socket.emit("sendMessage", {
           ...response.message,
@@ -285,7 +274,6 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
         });
       } catch (err: any) {
         setError(err?.message || "Failed to send message");
-        // Rollback optimistic update on error
         setChats(prev => prev.filter(msg => msg.id !== newMessage.id));
       }
     },
@@ -312,7 +300,7 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
     }
   }, []);
 
-  // Group messages by date
+
   const groupedMessages = chats.reduce((acc, message) => {
     const date = formatDateHeader(message.createdAt);
     if (!acc[date]) {
@@ -322,7 +310,6 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
     return acc;
   }, {} as Record<string, Message[]>);
 
-  // New button to scroll to bottom if not already there
   const ScrollToBottomButton = () => {
     if (isScrolledToBottom) return null;
     
@@ -343,14 +330,12 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
     );
   };
 
-  // Custom scrollbar styles using CSS variables
-  const scrollbarThumbColor = darkMode ? '#4B5563' : '#CBD5E0';  // gray-600 or gray-300
-  const scrollbarTrackColor = darkMode ? '#1F2937' : '#F3F4F6';  // gray-800 or gray-100
-  const scrollbarHoverColor = darkMode ? '#6B7280' : '#9CA3AF';  // gray-500 or gray-400
+  const scrollbarThumbColor = darkMode ? '#4B5563' : '#CBD5E0';  
+  const scrollbarTrackColor = darkMode ? '#1F2937' : '#F3F4F6';  
+  const scrollbarHoverColor = darkMode ? '#6B7280' : '#9CA3AF';  
 
   return (
     <div className={`flex flex-col h-full ${containerStyles}`}>
-      {/* Chat Header with User Info */}
       <div className={`p-3 border-b flex items-center justify-between sticky top-0 z-10 ${
         darkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"
       }`}>
@@ -386,14 +371,11 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
         </button>
       </div>
 
-      {/* Messages Area with CSS Styled Scrollbar */}
       <div 
         ref={messagesContainerRef}
         className={`flex-1 overflow-y-auto p-4 ${darkMode ? 'bg-gray-800' : 'bg-[#fafafa]'} relative custom-scrollbar`}
         style={{ 
-          // Use 'auto' for initial scroll behavior to prevent smooth scrolling on load
           scrollBehavior: initialLoad ? 'auto' : 'smooth',
-          // Custom CSS variables for scrollbar styling
           '--scrollbar-thumb': scrollbarThumbColor,
           '--scrollbar-track': scrollbarTrackColor,
           '--scrollbar-hover': scrollbarHoverColor,
@@ -483,11 +465,9 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
         )}
         <div ref={messagesEndRef} />
         
-        {/* Scroll to bottom button */}
         <ScrollToBottomButton />
       </div>
 
-      {/* Message Input */}
       <div className={`p-3 border-t sticky bottom-0 ${
         darkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"
       }`}>
@@ -520,7 +500,6 @@ const Chats: React.FC<ChatsProps> = ({ currentChat }) => {
         </form>
       </div>
 
-      {/* Add CSS for custom scrollbar */}
       <style>{`
         /* Custom scrollbar styling */
         .custom-scrollbar::-webkit-scrollbar {

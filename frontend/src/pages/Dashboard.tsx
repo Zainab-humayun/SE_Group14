@@ -7,7 +7,6 @@ import {
   faTimes,
   faHome,
   faCar,
-  faClock,
   faPlus
 } from "@fortawesome/free-solid-svg-icons";
 import RidePosts from "../components/RidePosts";
@@ -22,7 +21,6 @@ const Dashboard = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [mobileView, setMobileView] = useState<"posts" | "active">("posts");
 
-  // Color constants for consistent blue theme
   const blueColors = {
     primary: "bg-blue-600",
     hover: "hover:bg-blue-700",
@@ -32,13 +30,11 @@ const Dashboard = () => {
     shadow: "shadow-md hover:shadow-lg",
   };
 
-  // Handle responsiveness
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 1024;
       setIsMobile(mobile);
 
-      // Update placeholder text based on screen size
       if (window.innerWidth < 640) {
         setPlaceholder("Search rides...");
       } else if (window.innerWidth < 1024) {
@@ -48,13 +44,11 @@ const Dashboard = () => {
       }
     };
 
-    // Initialize
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Utility classes with consistent blue theme
   const inputClass = `w-full px-4 py-2 pl-10 rounded-full focus:outline-none focus:ring-2 ${
     darkMode
       ? "bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-400 focus:ring-blue-500"
@@ -94,7 +88,6 @@ const Dashboard = () => {
         darkMode ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"
       }`}
     >
-      {/* Mobile Header */}
       {isMobile && (
         <header
           className="sticky top-0 z-10 p-4 shadow-md bg-opacity-90 backdrop-blur-sm"
@@ -123,7 +116,6 @@ const Dashboard = () => {
         </header>
       )}
 
-      {/* Mobile Menu */}
       {isMobile && menuOpen && (
         <div
           className="fixed inset-0 z-20 bg-black bg-opacity-50 backdrop-blur-sm"
@@ -169,19 +161,15 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
         {!isMobile ? (
-          // Desktop Layout
           <div className="flex gap-6">
-            {/* Left Sidebar - Active Ride */}
             <div className="w-[45%] relative flex-shrink-0">
               <div className="sticky top-24 h-[calc(100vh-6rem)]">
                 <CurrentActiveRide />
               </div>
             </div>
 
-            {/* Main Content */}
             <div className="flex-1 max-w-2xl mx-auto">
               <div className="flex items-center gap-4 mb-6">
                 {renderSearchBar()}
@@ -200,7 +188,6 @@ const Dashboard = () => {
             </div>
           </div>
         ) : (
-          // Mobile Layout
           <>
             {mobileView === "posts" && (
               <div className="mt-4">
@@ -214,7 +201,6 @@ const Dashboard = () => {
               </div>
             )}
 
-            {/* Mobile Floating Action Buttons */}
             <div className="fixed bottom-6 right-6 z-10">
               <Link
                 to="/make-ride-request"

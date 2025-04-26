@@ -93,17 +93,14 @@ const App: React.FC = () => {
 
  
 
-  // Dark mode background and text colors
   const appBackground = darkMode
     ? "bg-gray-900 text-gray-100 min-h-screen"
     : " text-gray-900 min-h-screen";
 
   return (
     <div className={!auth.user ? "" : appBackground}>
-      {/* Header */}
       {auth.user ? <Header /> : <UnauthenticatedHeader />}
 
-      {/* Main content area */}
       <main className="container mx-auto px-1 py-2">
         <Routes>
           <Route
@@ -173,10 +170,7 @@ const App: React.FC = () => {
         </Routes>
       </main>
 
-      {/* You might want to add a footer here with dark mode support */}
-      {/* <footer className={`py-6 ${darkMode ? 'bg-gray-800' : 'bg-gray-200'}`}>
-        Footer content
-      </footer> */}
+    
     </div>
   );
 };

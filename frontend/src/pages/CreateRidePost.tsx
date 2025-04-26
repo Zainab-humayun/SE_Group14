@@ -4,7 +4,6 @@ import { postRequest } from "../services/apiRequests";
 import { useTheme } from "../context/themeContext";
 import Map from "../components/sub/Map";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
 
 interface Location {
   place_id: string;
@@ -190,7 +189,6 @@ const CreateRidePost = () => {
 
   return (
     <div className={`flex flex-col lg:flex-row min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
-      {/* Form Container */}
       <div className="lg:w-1/3 p-4 lg:p-6">
         <div className={`p-6 rounded-xl shadow-lg ${darkMode ? "bg-gray-800" : "bg-white"}`}>
           <h2 className={`text-2xl font-bold mb-6 ${darkMode ? "text-white" : "text-gray-800"}`}>
@@ -259,7 +257,6 @@ const CreateRidePost = () => {
 
             
 
-            {/* Passengers */}
             <div>
               <label className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Passengers</label>
               <div className="flex space-x-2">
@@ -278,7 +275,6 @@ const CreateRidePost = () => {
               </div>
             </div>
 
-            {/* Fare Input */}
             <div>
               <label className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Fare (Rs)</label>
               <input
@@ -291,7 +287,6 @@ const CreateRidePost = () => {
               />
             </div>
 
-            {/* Note Input */}
             <div>
               <label className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Note (Optional)</label>
               <textarea
@@ -303,7 +298,6 @@ const CreateRidePost = () => {
               />
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading || !selectedFromLocation || !selectedToLocation || !fare}
@@ -327,7 +321,6 @@ const CreateRidePost = () => {
         </div>
       </div>
 
-      {/* Map Container */}
       <div className="lg:w-2/3 h-[500px] lg:h-auto sticky overflow-hidden rounded-2xl border-2 transition-all duration-300 bg-white dark:bg-gray-800">
         {selectedFromLocation || selectedToLocation ? (
           <Map

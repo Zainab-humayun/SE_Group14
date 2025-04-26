@@ -7,7 +7,7 @@ import logo from "../../public/logo.jpg";
 const UnauthenticatedHeader = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isMenuOpen, setMenuOpen] = useState(false);
-  const isMobile = windowWidth <= 768; // md breakpoint
+  const isMobile = windowWidth <= 768; 
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -19,7 +19,6 @@ const UnauthenticatedHeader = () => {
     <header className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-14">
-          {/* Logo and Brand Name */}
           <Link to="/" className="flex items-center gap-2">
             <img 
               src={logo} 
@@ -33,7 +32,6 @@ const UnauthenticatedHeader = () => {
             )}
           </Link>
 
-          {/* Desktop Navigation - Login/Signup always visible on mobile */}
           <div className="flex items-center gap-4">
             {isMobile && (
               <div className="flex gap-2 mr-2">
@@ -52,7 +50,6 @@ const UnauthenticatedHeader = () => {
               </div>
             )}
 
-            {/* Desktop Navigation - Main Links */}
             {!isMobile && (
               <nav className="flex gap-6 mr-4">
                 <Link 
@@ -70,7 +67,6 @@ const UnauthenticatedHeader = () => {
               </nav>
             )}
 
-            {/* Desktop Navigation - Auth Buttons */}
             {!isMobile && (
               <div className="flex gap-3">
                 <Link 
@@ -99,7 +95,6 @@ const UnauthenticatedHeader = () => {
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
         {isMenuOpen && isMobile && (
           <div className="absolute left-0 w-full bg-white shadow-lg flex flex-col items-stretch gap-1 p-2 border-t border-gray-100">
             <Link 

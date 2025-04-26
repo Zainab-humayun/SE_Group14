@@ -33,7 +33,6 @@ const HomeRightBar = () => {
       duration: "18 min",
       driver: "Alex M.",
     },
-    // Add more rides to test scroll behavior...
   ];
 
   const containerStyles = darkMode

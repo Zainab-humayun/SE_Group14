@@ -61,7 +61,6 @@ const UserProfile = () => {
 
   console.log("Profile Data: ", profile);
 
-  // Color variables for dark/light mode
   const bgColor = darkMode
     ? "bg-gray-900 text-gray-50"
     : "bg-white text-gray-900";
@@ -76,13 +75,12 @@ const UserProfile = () => {
 
   const borderColor = darkMode ? "border-gray-700" : "border-gray-200";
 
-  // const buttonHover = darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100";
+
 
   const coverBg = darkMode
     ? "bg-gradient-to-r from-gray-800 to-gray-900"
     : "bg-gradient-to-r from-blue-500 to-indigo-600";
 
-  // const accentColor = darkMode ? "text-blue-400" : "text-blue-600";
 
   const buttonBg = darkMode
     ? "bg-gray-700 hover:bg-gray-600"
@@ -114,11 +112,9 @@ const UserProfile = () => {
     >
       {profile ? (
         <div className="max-w-4xl mx-auto">
-          {/* Profile Header */}
           <div
             className={`${cardBg} shadow-xl rounded-xl overflow-hidden border ${borderColor} transition-colors duration-300`}
           >
-            {/* Cover Photo */}
             <div className={`h-48 ${coverBg} relative`}>
               <div className="absolute -bottom-16 left-6">
                 <div
@@ -133,10 +129,8 @@ const UserProfile = () => {
               </div>
             </div>
 
-            {/* Profile Info */}
             <div className="px-6 pt-20 pb-6 relative">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
-                {/* User Info */}
                 <div className="flex-1">
                   <div className="flex flex-col sm:flex-row sm:items-end justify-between">
                     <div>
@@ -170,7 +164,6 @@ const UserProfile = () => {
                     </div>
                   </div>
 
-                  {/* Badges */}
                   <div className="mt-4 flex flex-wrap gap-2">
                     {profile.isAdmin && (
                       <span
@@ -227,9 +220,7 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Details Section */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Personal Info Card */}
             <div
               className={`${cardBg} shadow-xl rounded-xl p-6 border ${borderColor} transition-colors duration-300`}
             >
@@ -278,11 +269,9 @@ const UserProfile = () => {
               </div>
             </div>
 
-            {/* Vehicle Info Card - Only shown if user is a driver */}
             <div
               className={`${cardBg} shadow-xl rounded-xl p-6 border ${borderColor} transition-colors duration-300`}
             >
-              {/* Header with edit button */}
               <div className="flex items-center justify-between mb-6 pb-4 border-b ${borderColor}">
                 <h2 className={`text-2xl font-bold ${textColor}`}>
                   Vehicle Information
@@ -297,7 +286,6 @@ const UserProfile = () => {
 
               {profile.vehicles ? (
                 <div className="space-y-6">
-                  {/* Vehicle Image - Featured prominently */}
                   {profile.vehicles.vehiclePics && (
                     <div className="relative w-full h-56 sm:h-64 md:h-72 rounded-xl overflow-hidden border-2 ${borderColor}">
                       <img
@@ -316,7 +304,6 @@ const UserProfile = () => {
                     </div>
                   )}
 
-                  {/* Vehicle Details */}
                   <div
                     className={`p-5 rounded-xl ${darkMode ? "bg-gray-800" : "bg-gray-50"} shadow-sm`}
                   >

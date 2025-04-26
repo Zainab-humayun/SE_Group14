@@ -13,7 +13,6 @@ const Messenger: React.FC = () => {
         ? "border-gray-700 bg-gray-800 text-white" 
         : "border-gray-300 bg-white text-black"
     }`}>
-      {/* Sidebar - Conversation List */}
       {!currentChat ? (
         <div className="flex-1 flex flex-col overflow-hidden">
          

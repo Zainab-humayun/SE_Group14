@@ -26,14 +26,7 @@ const RidePosts = () => {
 
   const navigate = useNavigate();
 
-  const blueColors = {
-    primary: "bg-blue-600",
-    hover: "hover:bg-blue-700",
-    focus: "focus:ring-blue-500",
-    border: "border-blue-600",
-    text: "text-white",
-    shadow: "shadow-md hover:shadow-lg",
-  };
+
 
   const styles = useMemo(
     () => ({

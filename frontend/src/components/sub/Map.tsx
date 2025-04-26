@@ -65,17 +65,14 @@ const Map = ({
     };
   }, []);
 
-  // Update markers
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // Clear existing markers
     markersRef.current.forEach(marker => {
       mapRef.current?.removeLayer(marker);
     });
     markersRef.current = [];
 
-    // Add new markers
     markers.forEach(markerInfo => {
       const marker = L.marker(markerInfo.position)
         .addTo(mapRef.current!)
@@ -84,7 +81,6 @@ const Map = ({
     });
   }, [markers]);
 
-  // Update route
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -103,7 +99,6 @@ const Map = ({
     }
   }, [route, darkMode]);
 
-  // Update view when center changes
   useEffect(() => {
     if (mapRef.current) {
       mapRef.current.setView(center, zoom);
@@ -111,7 +106,6 @@ const Map = ({
     }
   }, [center, zoom]);
 
-  // Update tile layer when dark mode changes
   useEffect(() => {
     if (mapRef.current && tileLayerRef.current) {
       mapRef.current.removeLayer(tileLayerRef.current);
@@ -126,7 +120,6 @@ const Map = ({
         }
       ).addTo(mapRef.current);
       
-      // Update route color
       if (routeRef.current) {
         routeRef.current.setStyle({
           color: darkMode ? '#ff7f00' : '#3388ff'

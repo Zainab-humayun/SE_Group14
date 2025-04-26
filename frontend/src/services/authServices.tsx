@@ -2,18 +2,12 @@ import axiosJWT from "./axiosInstance";
 import { AuthUser } from "../interfaces/authInterfaces";
 
 
-// interface User {
-//   accessToken: string;
-//   [key: string]: any
-// }
-
 
 export const refreshToken = async (): Promise<string | null> => {
   try {
     const res = await axiosJWT.post<{ accessToken: string }>("/auth/refresh", {});
     return res.data.accessToken;
   } catch (err:any) {
-    console.log("Refresh Token Error:", err);
     return null;
   }
 };
@@ -28,10 +22,8 @@ export const loginUser = async (
   try {
     setLoading(true);
     setError(null); 
-    console.log("Trying to login");
 
     const res = await axiosJWT.post<{ accessToken: string }>("/auth/login", { username, password });
-    console.log("Logged user: ", res.data);
 
     return res.data.accessToken;
 
@@ -75,7 +67,6 @@ export const getUser = async (accessToken: string): Promise<any> => {
       withCredentials: true,
     });
 
-    console.log("THIS: ", res.data);
     return res.data;
   } catch (err) {
     console.error("Error fetching user data:", err);

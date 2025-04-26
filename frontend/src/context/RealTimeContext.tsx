@@ -47,7 +47,6 @@ export const GeneralProvider: React.FC<GeneralProviderProps> = ({ children }) =>
         auth?.accessToken
       );
       setUnreadMessagesCount(response.count);
-      // setConversationIds(response.ids);
     };
 
 

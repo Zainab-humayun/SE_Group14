@@ -98,7 +98,6 @@ const UpdateProfile = () => {
     setSuccessMessage(null);
     
     try {
-      // Only send the fields that can be changed
       const updateData = {
         fullname: userData.fullname,
         phone: userData.phone,
@@ -116,7 +115,6 @@ const UpdateProfile = () => {
         setTimeout(() => {
           if (!auth?.user) return;
           
-          // Redirect based on driver selection
           if (userData.driver === "yes") {
             navigate(`/update-vehicle-info`);
           } else {
@@ -131,7 +129,6 @@ const UpdateProfile = () => {
     }
   };
 
-  // Define styling variables based on theme
   const bgColor = darkMode ? "bg-gray-900 text-gray-50" : "bg-gray-50 text-gray-900";
   const cardBg = darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200";
   const inputBg = darkMode ? "bg-gray-700 border-gray-600 focus:ring-blue-500 placeholder-gray-400 text-white" : "bg-gray-50 border-gray-300 focus:ring-blue-400 text-gray-800";
@@ -159,21 +156,18 @@ const UpdateProfile = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="px-6 py-8 space-y-6">
-              {/* Success Message */}
               {successMessage && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
                   <span className="block sm:inline">{successMessage}</span>
                 </div>
               )}
 
-              {/* Error Message */}
               {error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
                   <span className="block sm:inline">{error}</span>
                 </div>
               )}
 
-              {/* Username field (readonly) */}
               <div>
                 <label className={`block text-sm font-medium ${darkMode ? "text-gray-300" : "text-gray-700"} mb-1`}>
                   Username
@@ -200,7 +194,6 @@ const UpdateProfile = () => {
                 </div>
               </div>
 
-              {/* Email field (readonly) */}
               <div>
                 <label className={`block text-sm font-medium ${darkMode ? "text-gray-300" : "text-gray-700"} mb-1`}>
                   Email
@@ -227,7 +220,6 @@ const UpdateProfile = () => {
                 </div>
               </div>
 
-              {/* Full Name field */}
               <div>
                 <label className={`block text-sm font-medium ${darkMode ? "text-gray-300" : "text-gray-700"} mb-1`}>
                   Full Name
@@ -247,7 +239,6 @@ const UpdateProfile = () => {
                 </div>
               </div>
 
-              {/* Phone field */}
               <div>
                 <label className={`block text-sm font-medium ${darkMode ? "text-gray-300" : "text-gray-700"} mb-1`}>
                   Phone Number
@@ -267,7 +258,6 @@ const UpdateProfile = () => {
                 </div>
               </div>
 
-              {/* Type field */}
               <div>
                 <label className={`block text-sm font-medium ${darkMode ? "text-gray-300" : "text-gray-700"} mb-1`}>
                   User Type: <span className="font-bold">{userData.type}</span>
@@ -290,7 +280,6 @@ const UpdateProfile = () => {
                 </div>
               </div>
 
-              {/* Driver field */}
               <div>
                 <label className={`block text-sm font-medium ${darkMode ? "text-gray-300" : "text-gray-700"} mb-1`}>
                   Do you want to be a driver?
@@ -318,7 +307,6 @@ const UpdateProfile = () => {
                 )}
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 className={`w-full py-4 rounded-lg font-semibold transition-all duration-300 text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] text-white flex items-center justify-center ${buttonBg}`}

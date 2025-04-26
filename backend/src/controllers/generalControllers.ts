@@ -1,58 +1,44 @@
 import { Request, Response } from "express";
 import prisma from "../db/prisma.js";
 
-interface CustomRequest extends Request {
-  user?: {
-    id: string;
-    username: string;
-    fullname: string;
-    driver: boolean;
-  };
-}
+
 
 export const createComplain = async (req: Request, res: Response) => {
   try {
     const { targetId, complain } = req.body;
 
-    console.log(targetId, complain);
-    
-    // Validate request body
+  
     if (!targetId || !complain) {
       res.status(400).json({ error: "Target ID and complaint message are required" });
       return;
     }
 
-    // Check if user is authenticated
     const complainerId = req.user?.id;
     if (!complainerId) {
       res.status(401).json({ error: "Unauthorized access" });
       return;
     }
 
-    // Check if user is trying to complain against themselves
     if (targetId === complainerId) {
       res.status(400).json({ error: "You cannot file a complaint against yourself" });
       return;
     }
 
-    console.log("ID: ", targetId);
-    // Check if target user exists
+  
     const targetUser = await prisma.user.findUnique({
       where: { id: targetId }
     });
 
     if (!targetUser) {
-      console.log("dasdasdad");
       res.status(404).json({ error: "Target user not found" });
       return;
     }
 
-    // Create the complaint
     const newComplain = await prisma.complain.create({
       data: {
         target: { connect: { id: targetId } },
         complainer: { connect: { id: complainerId } },
-        complain: complain.trim() // Trim whitespace from complaint
+        complain: complain.trim() 
       },
       include: {
         target: {
@@ -156,11 +142,9 @@ export const getSearchedUserResults = async (req: Request, res: Response) => {
 
 
 export const getUserProfile = async (req: Request, res: Response) => {
-  // console.log("Here");
     try {
     const userId = req.params.userId;
 
-    console.log(userId);
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -182,7 +166,6 @@ export const getUserProfile = async (req: Request, res: Response) => {
         
       }
     });
-    console.log("This: ", user);
     if (!user) {
       res.status(404).json({ error: "User not found" });
       return;
@@ -239,7 +222,6 @@ export const submitUserRating = async (req: Request, res: Response) => {
       return;
     }
 
-    // Create new review
     await prisma.review.create({
       data: {
         rating,
@@ -247,7 +229,6 @@ export const submitUserRating = async (req: Request, res: Response) => {
       },
     });
 
-    // Recalculate average rating
     const allReviews = await prisma.review.findMany({
       where: { reviewedUserId },
       select: { rating: true },
@@ -256,7 +237,6 @@ export const submitUserRating = async (req: Request, res: Response) => {
     const avgRating =
       allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
 
-    // Update the user's rating
     await prisma.user.update({
       where: { id: reviewedUserId },
       data: { rating: avgRating },

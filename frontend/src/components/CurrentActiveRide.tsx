@@ -4,7 +4,6 @@ import { getRequest, postRequest, putRequest } from "../services/apiRequests";
 import {
   FiClock,
   FiUser,
-  FiMapPin,
   FiDollarSign,
   FiCalendar,
   FiX,
@@ -152,7 +151,6 @@ const CurrentActiveRide = () => {
 
     const res = await putRequest({ fare: updatedFare }, url);
 
-    console.log("Fare updated: ", res);
   };
 
   const handleFareDecrease = async () => {
@@ -168,7 +166,6 @@ const CurrentActiveRide = () => {
 
       const res = await putRequest({ fare: updatedFare }, url);
 
-      console.log("Fare updated: ", res);
     }
   };
 
@@ -207,7 +204,6 @@ const CurrentActiveRide = () => {
       <div
         className={`flex flex-col h-full ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}
       >
-        {/* Status Bar */}
         <div
           className={`p-4 ${darkMode ? "bg-gray-800" : "bg-white"} border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}
         >
@@ -249,11 +245,9 @@ const CurrentActiveRide = () => {
           </div>
         </div>
 
-        {/* Ride Details with custom scrollbar */}
         <div
           className={`flex-1 overflow-y-auto p-4 scroll-container ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}
         >
-          {/* Time Until Ride */}
           <div
             className={`mb-4 p-3 rounded-lg flex items-center justify-between ${darkMode ? "bg-gray-800" : "bg-white"} shadow-sm`}
           >
@@ -277,7 +271,6 @@ const CurrentActiveRide = () => {
             </div>
           </div>
 
-          {/* Route */}
           <div
             className={`mb-4 p-4 rounded-lg ${darkMode ? "bg-gray-800" : "bg-white"} shadow-sm`}
           >
@@ -318,7 +311,6 @@ const CurrentActiveRide = () => {
             </div>
           </div>
 
-          {/* Ride Info */}
           <div
             className={`mb-4 p-4 rounded-lg ${darkMode ? "bg-gray-800" : "bg-white"} shadow-sm`}
           >
@@ -443,7 +435,6 @@ const CurrentActiveRide = () => {
             </div>
           </div>
 
-          {/* User Info */}
           {ride.isAccepted && otherUser && (
             <div
               className={`mb-4 p-4 rounded-lg ${darkMode ? "bg-gray-800" : "bg-white"} shadow-sm`}
@@ -507,7 +498,6 @@ const CurrentActiveRide = () => {
           )}
         </div>
 
-        {/* Action Buttons */}
         <div
           className={`p-4 border-t ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
         >

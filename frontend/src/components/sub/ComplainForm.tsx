@@ -25,7 +25,6 @@ const ComplainForm = ({ targetId, darkMode, onClose }: ComplainFormProps) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
-  // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (formRef.current && !formRef.current.contains(event.target as Node)) {
@@ -39,7 +38,6 @@ const ComplainForm = ({ targetId, darkMode, onClose }: ComplainFormProps) => {
     };
   }, [onClose]);
 
-  // Prevent background scrolling
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
@@ -63,45 +61,38 @@ const ComplainForm = ({ targetId, darkMode, onClose }: ComplainFormProps) => {
     try {
       await postRequest({targetId, complain}, url, auth.accessToken, setIsLoading, setError);
   
-      console.log('Complaint submitted:', { complain, targetId });
       setIsSubmitted(true);
       setComplain('');
       setTimeout(onClose, 1500);
     } catch (err) {
-      console.error('Submit error:', err);
       setError('Failed to submit complaint. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Uber-inspired color scheme with inverted buttons
   const bgColor = darkMode ? 'bg-gray-900' : 'bg-white';
   const textColor = darkMode ? 'text-gray-100' : 'text-gray-900';
   const secondaryText = darkMode ? 'text-gray-400' : 'text-gray-600';
   const borderColor = darkMode ? 'border-gray-700' : 'border-gray-200';
   const inputBg = darkMode ? 'bg-gray-800' : 'bg-white';
   
-  // Inverted button colors (dark in light mode, light in dark mode)
   const buttonBg = darkMode ? 'bg-white hover:bg-gray-100 text-black' : 'bg-black hover:bg-gray-800 text-white';
   const disabledButtonBg = darkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-300 text-gray-600';
   
   const successBg = darkMode ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800';
   const errorBg = darkMode ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800';
-  const accentColor = 'text-green-500'; // Uber's signature green
+  const accentColor = 'text-green-500';
 
   return (
     <>
-      {/* Blurred Background Overlay */}
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-40"></div>
       
-      {/* Form Container */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
         <div 
           ref={formRef}
           className={`${bgColor} ${textColor} rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto relative border ${borderColor}`}
         >
-          {/* Header with close button - Uber-style */}
           <div className={`flex justify-between items-center p-4 border-b ${borderColor}`}>
             <h2 className="text-xl font-semibold flex items-center">
               <FiAlertCircle className={`mr-2 ${accentColor}`} />
@@ -116,7 +107,6 @@ const ComplainForm = ({ targetId, darkMode, onClose }: ComplainFormProps) => {
             </button>
           </div>
           
-          {/* Form Content - Uber-inspired */}
           <div className="p-4">
             <form onSubmit={handleSubmit}>
               <div className="mb-4">

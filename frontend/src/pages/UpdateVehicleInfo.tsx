@@ -37,7 +37,6 @@ const UpdateVehicleInfo: React.FC = () => {
   const { selectedFile, previewUrl, handleFileChange } = useFileHandler();
   const { imageUrl, isLoading: isUploading, error: uploadError, uploadImage } = useImageUpload();
 
-  // Update vehiclePic when imageUrl changes
   useEffect(() => {
     if (imageUrl) {
       setVehicleData(prev => ({ ...prev, vehiclePic: imageUrl }));
@@ -73,10 +72,9 @@ const UpdateVehicleInfo: React.FC = () => {
     setSuccessMessage(null);
   
     try {
-      // Initialize with existing image URL (default to empty string if null/undefined)
+      
       let finalImageUrl = vehicleData.vehiclePic || '';
       
-      // Only upload if there's a new file selected
       if (selectedFile) {
         const uploadedUrl = await handleImageUpload();
         if (!uploadedUrl) {
@@ -85,28 +83,24 @@ const UpdateVehicleInfo: React.FC = () => {
         finalImageUrl = uploadedUrl;
       }
   
-      // Ensure we have at least an empty string for the image URL
       if (finalImageUrl === null) {
         finalImageUrl = '';
       }
   
-      // Prepare submission data with the final image URL
       const submissionData = {
         ...vehicleData,
         vehiclePic: finalImageUrl
       };
   
-      // Submit to backend
       const response = await putRequest(
         { data: submissionData },
         '/update/update-vehicle-info',
-        // auth.accessToken
       );
   
       if (response) {
         setSuccessMessage('Vehicle information updated successfully!');
         navigate("/profile/"+auth.user.id);
-        // resetFile(); // Clear the file selection after successful submission
+      
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update vehicle information');
@@ -122,7 +116,6 @@ const UpdateVehicleInfo: React.FC = () => {
     }));
   };
 
-  // Dynamic styles based on dark mode
   const containerStyles = darkMode 
     ? 'bg-gray-900 text-gray-100'
     : 'bg-white text-gray-900';
@@ -157,7 +150,6 @@ const UpdateVehicleInfo: React.FC = () => {
           <h2 className="text-2xl font-bold">Update Vehicle Information</h2>
         </div>
 
-        {/* Success/Error Messages */}
         {successMessage && (
           <div className={`mb-4 p-3 rounded-lg ${
             darkMode ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-800'
@@ -205,7 +197,6 @@ const UpdateVehicleInfo: React.FC = () => {
             </div>
           </div>
 
-          {/* Vehicle Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label htmlFor="name" className="block text-sm font-medium">Vehicle Name</label>
@@ -264,7 +255,6 @@ const UpdateVehicleInfo: React.FC = () => {
             </div>
           </div>
 
-          {/* Vehicle Picture */}
           <div className="space-y-4">
             <label className="block text-sm font-medium">Vehicle Picture</label>
             <label className={`flex flex-col items-center justify-center w-full p-6 border-2 border-dashed rounded-lg cursor-pointer ${
@@ -301,7 +291,6 @@ const UpdateVehicleInfo: React.FC = () => {
             )}
           </div>
 
-          {/* Submit Button */}
           <button 
             type="submit" 
             disabled={isSubmitting || isUploading}
